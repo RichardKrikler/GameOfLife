@@ -19,6 +19,8 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
+import java.util.regex.Pattern;
+
 
 /**
  * GUI for the Game Of Life
@@ -26,13 +28,22 @@ import javafx.stage.Stage;
  * @author Richard Krikler
  */
 public class GameGui extends Application {
-
+    /**
+     * Main method launching the main GUI.
+     *
+     * @param args not used
+     */
     public static void main(String[] args) {
         Application.launch(args);
     }
 
+    /**
+     * Start the main GUI.
+     *
+     * @param stage top level JavaFX container for the main GUI
+     */
     @Override
-    public void start(Stage stage) throws Exception {
+    public void start(Stage stage) {
         final int guiWidth = 1000;
         final int guiHeight = 550;
         int sizePerCell = 16;
@@ -72,9 +83,7 @@ public class GameGui extends Application {
 
 
         GraphicsContext gc = gameCanvas.getGraphicsContext2D();
-        double canvasW = gameCanvas.getWidth();
-        double canvasH = gameCanvas.getHeight();
-        drawPlayField(gc, canvasW, canvasH, sizePerCell, playField);
+        drawPlayField(gc, gameCanvas, sizePerCell, playField);
 
         // ------------------
 
@@ -306,7 +315,32 @@ public class GameGui extends Application {
         stage.show();
 
         // ------------------ Event Handlers ------------------
-        setDimensionBt.setOnAction(e -> System.out.println("Set Dimension"));
+        Pattern pattern = Pattern.compile("^\\d+$");
+        setDimensionBt.setOnAction(e -> {
+            boolean validXDim = pattern.matcher(xDimTf.getText()).matches();
+            boolean validYDim = pattern.matcher(yDimTf.getText()).matches();
+
+            // If X dimension is invalid -> Display Error Message
+            if (!validXDim) {
+                errorDialog(stage, "Input Error", "The X dimension (\"" + xDimTf.getText() + "\") is not valid!", "Only integers are allowed.");
+                xDimTf.setText("");
+            }
+
+            // If Y dimension is invalid -> Display Error Message
+            if (!validYDim) {
+                errorDialog(stage, "Input Error", "The Y dimension (\"" + yDimTf.getText() + "\") is not valid!", "Only integers are allowed.");
+                yDimTf.setText("");
+            }
+
+            // If both inputs are valid -> set the dimensions of the playground and the size of the canvas
+            if (validXDim && validYDim) {
+                playField.setSize(Integer.parseInt(xDimTf.getText()), Integer.parseInt(yDimTf.getText()));
+                gameCanvas.setWidth(playField.getDimensionX() * sizePerCell);
+                gameCanvas.setHeight(playField.getDimensionY() * sizePerCell);
+                drawPlayField(gc, gameCanvas, sizePerCell, playField);
+            }
+        });
+
         playBt.setOnAction(e -> System.out.println("Start Game"));
         pauseBt.setOnAction(e -> System.out.println("Pause Game"));
         stepBackBt.setOnAction(e -> System.out.println("1-Step Back"));
@@ -327,12 +361,14 @@ public class GameGui extends Application {
      * Draw the current Play Field to the Canvas of the Gui.
      *
      * @param gc          GraphicsContext for the canvas
-     * @param canvasW     width of the play field canvas
-     * @param canvasH     height of the play field canvas
+     * @param gameCanvas  Canvas of the game field
      * @param sizePerCell size of one cell
      * @param playField   PlayField Object containing the play field array
      */
-    static void drawPlayField(GraphicsContext gc, double canvasW, double canvasH, int sizePerCell, PlayField playField) {
+    static void drawPlayField(GraphicsContext gc, Canvas gameCanvas, int sizePerCell, PlayField playField) {
+        double canvasW = gameCanvas.getWidth();
+        double canvasH = gameCanvas.getHeight();
+
         // Draw Cells
         for (int i = 0; i < playField.getDimensionY(); i++) {
             for (int j = 0; j < playField.getDimensionX(); j++) {
@@ -357,5 +393,22 @@ public class GameGui extends Application {
         for (int i = 0; i < playField.getDimensionY(); i++) {
             gc.strokeLine(0, i * sizePerCell, canvasW, i * sizePerCell);
         }
+    }
+
+    /**
+     * Display variable Error Dialog.
+     *
+     * @param stage       top level JavaFX container for the main GUI
+     * @param title       Title of the Error Dialog
+     * @param headerText  Main Error Message
+     * @param contentText Helpful Error Hint
+     */
+    static void errorDialog(Stage stage, String title, String headerText, String contentText) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.initOwner(stage);
+        alert.setTitle(title);
+        alert.setHeaderText(headerText);
+        alert.setContentText(contentText);
+        alert.showAndWait();
     }
 }
