@@ -31,22 +31,22 @@ public class GameGui extends Application {
     /**
      * Width of the main GUI
      */
-    final int guiWidth = 1000;
+    final int GUI_WIDTH = 1000;
 
     /**
      * Height of the main GUI
      */
-    final int guiHeight = 550;
+    final int GUI_HEIGHT = 550;
 
     /**
      * Default size per cell of the play field
      */
-    final int defaultSizePerCell = 16;
+    final int DEFAULT_SIZE_PER_CELL = 16;
 
     /**
      * Variable size per cell of the play field
      */
-    int sizePerCell = defaultSizePerCell;
+    int sizePerCell = DEFAULT_SIZE_PER_CELL;
 
 
     /**
@@ -316,7 +316,7 @@ public class GameGui extends Application {
         splitPane.getItems().addAll(borderPaneLeft, scrollPaneRight);
 
         // Set the position of the horizontal Divider of the SplitPane
-        splitPane.setPrefSize(guiWidth * 0.6, guiWidth * 0.4);
+        splitPane.setPrefSize(GUI_WIDTH * 0.6, GUI_WIDTH * 0.4);
         splitPane.getDividers().get(0).setPosition(0.60);
 
 
@@ -326,12 +326,14 @@ public class GameGui extends Application {
         stage.getIcons().add(new Image(this.getClass().getResourceAsStream("/GameOfLife.png")));
         stage.setResizable(true);
 
-        stage.setWidth(guiWidth);
-        stage.setHeight(guiHeight);
+        stage.setWidth(GUI_WIDTH);
+        stage.setHeight(GUI_HEIGHT);
 
         stage.show();
 
         // ------------------ Event Handlers ------------------
+
+        // Change the size of the play field to the values of the text fields
         Pattern pattern = Pattern.compile("^\\d+$");
         setDimensionBt.setOnAction(e -> {
             boolean validXDim = pattern.matcher(xDimTf.getText()).matches();
@@ -371,11 +373,28 @@ public class GameGui extends Application {
         savePresetBt.setOnAction(e -> System.out.println("Save Preset"));
         analysisBt.setOnAction(e -> System.out.println("Show Analysis"));
 
+        // Zoom Slider for zooming into the game Canvas
         zoomSlider.valueProperty().addListener(e -> {
             // Change the variable size per cell according to the value of the zoom slider
-            sizePerCell = (int) (defaultSizePerCell * zoomSlider.getValue());
+            sizePerCell = (int) (DEFAULT_SIZE_PER_CELL * zoomSlider.getValue());
             gameCanvas.setWidth(playField.getDimensionX() * sizePerCell);
             gameCanvas.setHeight(playField.getDimensionY() * sizePerCell);
+            drawPlayField(gc, gameCanvas, sizePerCell, playField);
+        });
+
+        // Change the value of a cell to living or dead
+        gameCanvas.setOnMouseClicked(e -> {
+            // Get the expected position in the array from the mouse position
+            int posX = (int) ((e.getSceneX() - gameCanvas.getLayoutX()) / sizePerCell);
+            int posY = (int) ((e.getSceneY() - gameCanvas.getLayoutY()) / sizePerCell);
+
+            // If it is a living cell -> dead
+            if (playField.getCell(posX, posY) == 1) {
+                playField.setCell(posX, posY, 0);
+            } else {
+                playField.setCell(posX, posY, 1);
+            }
+
             drawPlayField(gc, gameCanvas, sizePerCell, playField);
         });
     }
