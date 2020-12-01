@@ -29,6 +29,27 @@ import java.util.regex.Pattern;
  */
 public class GameGui extends Application {
     /**
+     * Width of the main GUI
+     */
+    final int guiWidth = 1000;
+
+    /**
+     * Height of the main GUI
+     */
+    final int guiHeight = 550;
+
+    /**
+     * Default size per cell of the play field
+     */
+    final int defaultSizePerCell = 16;
+
+    /**
+     * Variable size per cell of the play field
+     */
+    int sizePerCell = defaultSizePerCell;
+
+
+    /**
      * Main method launching the main GUI.
      *
      * @param args not used
@@ -44,10 +65,6 @@ public class GameGui extends Application {
      */
     @Override
     public void start(Stage stage) {
-        final int guiWidth = 1000;
-        final int guiHeight = 550;
-        int sizePerCell = 16;
-
         // ------------------ PlayField Object ------------------
         PlayField playField = new PlayField(15, 15);
 
@@ -90,7 +107,7 @@ public class GameGui extends Application {
 
         // Zoom Slider
         Slider zoomSlider = new Slider();
-        zoomSlider.setMin(0);
+        zoomSlider.setMin(0.1);
         zoomSlider.setMax(2);
         zoomSlider.setValue(1);
         zoomSlider.setShowTickLabels(true);
@@ -353,7 +370,14 @@ public class GameGui extends Application {
         loadPresetBt.setOnAction(e -> System.out.println("Load Preset"));
         savePresetBt.setOnAction(e -> System.out.println("Save Preset"));
         analysisBt.setOnAction(e -> System.out.println("Show Analysis"));
-        zoomSlider.valueProperty().addListener(e -> System.out.println("Zoom Value: " + zoomSlider.getValue()));
+
+        zoomSlider.valueProperty().addListener(e -> {
+            // Change the variable size per cell according to the value of the zoom slider
+            sizePerCell = (int) (defaultSizePerCell * zoomSlider.getValue());
+            gameCanvas.setWidth(playField.getDimensionX() * sizePerCell);
+            gameCanvas.setHeight(playField.getDimensionY() * sizePerCell);
+            drawPlayField(gc, gameCanvas, sizePerCell, playField);
+        });
     }
 
 
@@ -368,6 +392,8 @@ public class GameGui extends Application {
     static void drawPlayField(GraphicsContext gc, Canvas gameCanvas, int sizePerCell, PlayField playField) {
         double canvasW = gameCanvas.getWidth();
         double canvasH = gameCanvas.getHeight();
+
+        gc.clearRect(0, 0, canvasW, canvasH);
 
         // Draw Cells
         for (int i = 0; i < playField.getDimensionY(); i++) {
