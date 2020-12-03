@@ -17,8 +17,12 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.regex.Pattern;
 
 
@@ -47,6 +51,16 @@ public class GameGui extends Application {
      * Variable size per cell of the play field
      */
     int sizePerCell = DEFAULT_SIZE_PER_CELL;
+
+    /**
+     * Canvas displaying the play field
+     */
+    Canvas gameCanvas;
+
+    /**
+     * GraphicsContext for drawings on the canvas
+     */
+    GraphicsContext gc;
 
 
     /**
@@ -89,7 +103,7 @@ public class GameGui extends Application {
         scrollPaneLeft.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
         scrollPaneLeft.setHbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
 
-        Canvas gameCanvas = new Canvas(playField.getDimensionX() * sizePerCell, playField.getDimensionY() * sizePerCell);
+        gameCanvas = new Canvas(playField.getDimensionX() * sizePerCell, playField.getDimensionY() * sizePerCell);
         // Canvas inside of a StackPane
         StackPane stackPane = new StackPane(gameCanvas);
 
@@ -99,8 +113,8 @@ public class GameGui extends Application {
         scrollPaneLeft.setFitToHeight(true);
 
 
-        GraphicsContext gc = gameCanvas.getGraphicsContext2D();
-        drawPlayField(gc, gameCanvas, sizePerCell, playField);
+        gc = gameCanvas.getGraphicsContext2D();
+        drawPlayField(playField);
 
         // ------------------
 
@@ -166,12 +180,12 @@ public class GameGui extends Application {
         settingsGrid.add(playFieldLabel, 0, 3);
         GridPane.setColumnSpan(playFieldLabel, 4);
 
-        TextField xDimTf = new TextField();
+        TextField xDimTf = new TextField(Integer.toString(playField.getDimensionX()));
         xDimTf.setPromptText("X-Dim");
         xDimTf.setMaxWidth(55);
         settingsGrid.add(xDimTf, 0, 4);
 
-        TextField yDimTf = new TextField();
+        TextField yDimTf = new TextField(Integer.toString(playField.getDimensionY()));
         yDimTf.setPromptText("Y-Dim");
         yDimTf.setMaxWidth(55);
         settingsGrid.add(yDimTf, 1, 4);
@@ -354,9 +368,7 @@ public class GameGui extends Application {
             // If both inputs are valid -> set the dimensions of the playground and the size of the canvas
             if (validXDim && validYDim) {
                 playField.setSize(Integer.parseInt(xDimTf.getText()), Integer.parseInt(yDimTf.getText()));
-                gameCanvas.setWidth(playField.getDimensionX() * sizePerCell);
-                gameCanvas.setHeight(playField.getDimensionY() * sizePerCell);
-                drawPlayField(gc, gameCanvas, sizePerCell, playField);
+                drawPlayField(playField);
             }
         });
 
@@ -369,17 +381,56 @@ public class GameGui extends Application {
         setSpeedBt.setOnAction(e -> System.out.println("Set Game Speed"));
         gameRulesBt.setOnAction(e -> System.out.println("Set Game Rules"));
         presetBox.setOnAction(e -> System.out.println("Preset: " + presetBox.getSelectionModel().getSelectedItem()));
-        loadPresetBt.setOnAction(e -> System.out.println("Load Preset"));
-        savePresetBt.setOnAction(e -> System.out.println("Save Preset"));
+
+
+        FileChooser fileChooser = new FileChooser();
+
+        // File Extension = CSV
+        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("CSV files (*.csv)", "*.csv");
+        fileChooser.getExtensionFilters().add(extFilter);
+
+        // Initial / Default Directory = "resources/PlayFieldPresets"
+        fileChooser.setInitialDirectory(new File("resources/PlayFieldPresets"));
+
+        // Load a preset into the play field
+        loadPresetBt.setOnAction(e -> {
+            // Show the FileChooser open Dialog
+            File srcFile = fileChooser.showOpenDialog(stage);
+
+            // If the Dialog is cancelled or closed the value of destFile will be null
+            // If the selection is confirmed -> read the chosen file
+            if (srcFile != null) {
+                try {
+                    loadPreset(stage, playField, srcFile, xDimTf, yDimTf);
+                } catch (IOException ioException) {
+                    errorDialog(stage, "IOException", "Could not read the file!", String.valueOf(ioException.getCause()));
+                }
+            }
+        });
+
+        // Save the current play field to a CSV file
+        savePresetBt.setOnAction(e -> {
+            // Show the FileChooser save Dialog
+            File destFile = fileChooser.showSaveDialog(stage);
+
+            // If the Dialog is cancelled or closed the value of destFile will be null
+            // If the selection is confirmed -> write to the chosen file
+            if (destFile != null) {
+                try {
+                    Files.writeString(Paths.get(destFile.getPath()), playField.convertToCSV());
+                } catch (IOException ioException) {
+                    errorDialog(stage, "IOException", "Could not write to file!", String.valueOf(ioException.getCause()));
+                }
+            }
+        });
+
         analysisBt.setOnAction(e -> System.out.println("Show Analysis"));
 
         // Zoom Slider for zooming into the game Canvas
         zoomSlider.valueProperty().addListener(e -> {
             // Change the variable size per cell according to the value of the zoom slider
             sizePerCell = (int) (DEFAULT_SIZE_PER_CELL * zoomSlider.getValue());
-            gameCanvas.setWidth(playField.getDimensionX() * sizePerCell);
-            gameCanvas.setHeight(playField.getDimensionY() * sizePerCell);
-            drawPlayField(gc, gameCanvas, sizePerCell, playField);
+            drawPlayField(playField);
         });
 
         // Change the value of a cell to living or dead
@@ -395,7 +446,7 @@ public class GameGui extends Application {
                 playField.setCell(posX, posY, 1);
             }
 
-            drawPlayField(gc, gameCanvas, sizePerCell, playField);
+            drawPlayField(playField);
         });
     }
 
@@ -403,12 +454,12 @@ public class GameGui extends Application {
     /**
      * Draw the current Play Field to the Canvas of the Gui.
      *
-     * @param gc          GraphicsContext for the canvas
-     * @param gameCanvas  Canvas of the game field
-     * @param sizePerCell size of one cell
-     * @param playField   PlayField Object containing the play field array
+     * @param playField PlayField Object containing the play field array
      */
-    static void drawPlayField(GraphicsContext gc, Canvas gameCanvas, int sizePerCell, PlayField playField) {
+    void drawPlayField(PlayField playField) {
+        gameCanvas.setWidth(playField.getDimensionX() * sizePerCell);
+        gameCanvas.setHeight(playField.getDimensionY() * sizePerCell);
+
         double canvasW = gameCanvas.getWidth();
         double canvasH = gameCanvas.getHeight();
 
@@ -424,18 +475,12 @@ public class GameGui extends Application {
             }
         }
 
-
         // Draw Grid
-        gc.strokeLine(0, 0, canvasW, 0);
-        gc.strokeLine(0, canvasH, canvasW, canvasH);
-        gc.strokeLine(0, 0, 0, canvasH);
-        gc.strokeLine(canvasW, 0, canvasW, canvasH);
-
-        for (int i = 0; i < playField.getDimensionX(); i++) {
+        for (int i = 0; i <= playField.getDimensionX(); i++) {
             gc.strokeLine(i * sizePerCell, 0, i * sizePerCell, canvasH);
         }
 
-        for (int i = 0; i < playField.getDimensionY(); i++) {
+        for (int i = 0; i <= playField.getDimensionY(); i++) {
             gc.strokeLine(0, i * sizePerCell, canvasW, i * sizePerCell);
         }
     }
@@ -455,5 +500,26 @@ public class GameGui extends Application {
         alert.setHeaderText(headerText);
         alert.setContentText(contentText);
         alert.showAndWait();
+    }
+
+    /**
+     * Load a Preset from a File into the play field
+     *
+     * @param stage     top level JavaFX container for the main GUI
+     * @param playField PlayField Object containing the play field array
+     * @param srcFile   Source file of the Preset
+     * @param xDimTf    TextField for the Dimension input
+     * @param yDimTf    TextField for the Dimension input
+     * @throws IOException If the File could not be loaded properly
+     */
+    void loadPreset(Stage stage, PlayField playField, File srcFile, TextField xDimTf, TextField yDimTf) throws IOException {
+        // Load the file -> if not possible -> show Error Dialog
+        if (playField.loadFromCSV(Files.readAllLines(Paths.get(srcFile.getPath())))) {
+            drawPlayField(playField);
+            xDimTf.setText(Integer.toString(playField.getDimensionX()));
+            yDimTf.setText(Integer.toString(playField.getDimensionY()));
+        } else {
+            errorDialog(stage, "Loading File", "Could not load the file to the play field!", "Please check the file or try another one.");
+        }
     }
 }

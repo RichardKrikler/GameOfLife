@@ -1,5 +1,8 @@
 package gameoflife;
 
+import java.util.List;
+import java.util.regex.Pattern;
+
 /**
  * PlayField of the Game Of Life
  *
@@ -71,4 +74,63 @@ public class PlayField {
         this.playField[posY][posX] = value;
     }
 
+    /**
+     * Convert the play field to CSV format
+     *
+     * @return String containing the play field
+     */
+    String convertToCSV() {
+        StringBuilder csv = new StringBuilder();
+
+        for (int i = 0; i < this.getDimensionY(); i++) {
+            for (int j = 0; j < this.getDimensionX(); j++) {
+                if (j + 1 < this.getDimensionX()) {
+                    csv.append(this.getCell(j, i)).append(",");
+                } else {
+                    csv.append(this.getCell(j, i));
+                }
+            }
+            csv.append(System.lineSeparator());
+        }
+
+        return csv.toString();
+    }
+
+    /**
+     * Convert the CSV format from a file into the play field
+     *
+     * @param playField List of the Lines stored in the file
+     * @return true if the conversion was successful
+     */
+    boolean loadFromCSV(List<String> playField) {
+        if (playField.size() < 1) {
+            return false;
+        }
+
+        Pattern validLine = Pattern.compile("^([10],)*[10]$");
+        int[][] newPlayField = new int[playField.size()][];
+        int dimensionX = playField.get(0).split(",").length;
+        int dimensionY = playField.size();
+
+        for (int i = 0; i < dimensionY; i++) {
+            if (!validLine.matcher(playField.get(i)).matches()) {
+                return false;
+            }
+
+            String[] oneLineStAr = playField.get(i).split(",");
+            if (oneLineStAr.length != dimensionX) {
+                return false;
+            }
+
+            int[] oneLineIntAr = new int[dimensionX];
+            for (int j = 0; j < oneLineStAr.length; j++) {
+                oneLineIntAr[j] = Integer.parseInt(oneLineStAr[j]);
+            }
+
+            newPlayField[i] = oneLineIntAr;
+        }
+
+        this.playField = newPlayField;
+        return true;
+    }
 }
