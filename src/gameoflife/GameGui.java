@@ -22,7 +22,9 @@ import javafx.stage.Stage;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.regex.Pattern;
 
 
@@ -61,6 +63,13 @@ public class GameGui extends Application {
      * GraphicsContext for drawings on the canvas
      */
     GraphicsContext gc;
+
+    /**
+     * Save the available presets in the resources/PlayFieldPresets in a Map
+     * String = name of the preset
+     * Path = location of the preset
+     */
+    HashMap<String, Path> presets = new HashMap<>();
 
 
     /**
@@ -283,13 +292,8 @@ public class GameGui extends Application {
         settingsGrid.add(presetsLabel, 0, 13);
         GridPane.setColumnSpan(presetsLabel, 3);
 
-        ObservableList<String> options =
-                FXCollections.observableArrayList(
-                        "Option 1",
-                        "Option 2",
-                        "Option 3"
-                );
-        ComboBox<String> presetBox = new ComboBox<>(options);
+        ComboBox<String> presetBox = new ComboBox<>();
+        listPresets(presetBox);
         presetBox.setMinWidth(150);
         settingsGrid.add(presetBox, 0, 14);
         GridPane.setColumnSpan(presetBox, 3);
@@ -380,7 +384,19 @@ public class GameGui extends Application {
         resetToStartBt.setOnAction(e -> System.out.println("Reset Game to Start"));
         setSpeedBt.setOnAction(e -> System.out.println("Set Game Speed"));
         gameRulesBt.setOnAction(e -> System.out.println("Set Game Rules"));
-        presetBox.setOnAction(e -> System.out.println("Preset: " + presetBox.getSelectionModel().getSelectedItem()));
+
+        // Load the selected preset (file) from the dropdown menu of the presetBox
+        presetBox.setOnAction(e -> {
+            try {
+                if (!presetBox.getValue().equals("")) {
+                    String selectedItem = presetBox.getSelectionModel().getSelectedItem();
+                    loadPreset(stage, playField, this.presets.get(selectedItem), xDimTf, yDimTf);
+                    presetBox.getSelectionModel().select(0);
+                }
+            } catch (IOException ioException) {
+                errorDialog(stage, "IOException", "Could not read the file!", String.valueOf(ioException.getCause()));
+            }
+        });
 
 
         FileChooser fileChooser = new FileChooser();
@@ -401,7 +417,7 @@ public class GameGui extends Application {
             // If the selection is confirmed -> read the chosen file
             if (srcFile != null) {
                 try {
-                    loadPreset(stage, playField, srcFile, xDimTf, yDimTf);
+                    loadPreset(stage, playField, srcFile.toPath(), xDimTf, yDimTf);
                 } catch (IOException ioException) {
                     errorDialog(stage, "IOException", "Could not read the file!", String.valueOf(ioException.getCause()));
                 }
@@ -417,7 +433,8 @@ public class GameGui extends Application {
             // If the selection is confirmed -> write to the chosen file
             if (destFile != null) {
                 try {
-                    Files.writeString(Paths.get(destFile.getPath()), playField.convertToCSV());
+                    Files.writeString(destFile.toPath(), playField.convertToCSV());
+                    listPresets(presetBox);
                 } catch (IOException ioException) {
                     errorDialog(stage, "IOException", "Could not write to file!", String.valueOf(ioException.getCause()));
                 }
@@ -507,14 +524,14 @@ public class GameGui extends Application {
      *
      * @param stage     top level JavaFX container for the main GUI
      * @param playField PlayField Object containing the play field array
-     * @param srcFile   Source file of the Preset
+     * @param srcPath   Source path of the Preset
      * @param xDimTf    TextField for the Dimension input
      * @param yDimTf    TextField for the Dimension input
      * @throws IOException If the File could not be loaded properly
      */
-    void loadPreset(Stage stage, PlayField playField, File srcFile, TextField xDimTf, TextField yDimTf) throws IOException {
+    void loadPreset(Stage stage, PlayField playField, Path srcPath, TextField xDimTf, TextField yDimTf) throws IOException {
         // Load the file -> if not possible -> show Error Dialog
-        if (playField.loadFromCSV(Files.readAllLines(Paths.get(srcFile.getPath())))) {
+        if (playField.loadFromCSV(Files.readAllLines(srcPath))) {
             drawPlayField(playField);
             xDimTf.setText(Integer.toString(playField.getDimensionX()));
             yDimTf.setText(Integer.toString(playField.getDimensionY()));
@@ -522,4 +539,35 @@ public class GameGui extends Application {
             errorDialog(stage, "Loading File", "Could not load the file to the play field!", "Please check the file or try another one.");
         }
     }
+
+    /**
+     * Get all available Presets and list them into the ObservableList of the presetBox
+     *
+     * @param presetBox ComboBox, whose ObservableList contains all presets
+     */
+    void listPresets(ComboBox<String> presetBox) {
+        this.presets.clear();
+        File[] presetFiles = new File("resources/PlayFieldPresets").listFiles();
+        ObservableList<String> presetList;
+
+        // If there are no files found -> set the list to an empty string
+        // Otherwise list the files into the list without the ".csv" extension name
+        if (presetFiles == null) {
+            HashSet<String> emptySet = new HashSet<>();
+            emptySet.add("");
+            presetList = FXCollections.observableArrayList(emptySet);
+        } else {
+            this.presets.put("", null);
+            for (File presetFile : presetFiles) {
+                if (presetFile.isFile()) {
+                    this.presets.put(presetFile.getName().replaceAll(".csv", ""), presetFile.toPath());
+                }
+            }
+
+            presetList = FXCollections.observableArrayList(this.presets.keySet());
+        }
+
+        presetBox.setItems(presetList);
+    }
+
 }
