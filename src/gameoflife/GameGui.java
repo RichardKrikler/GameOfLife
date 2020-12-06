@@ -23,8 +23,10 @@ import javafx.stage.Stage;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 
@@ -71,6 +73,11 @@ public class GameGui extends Application {
      */
     HashMap<String, Path> presets = new HashMap<>();
 
+    /**
+     * ExecutorService for periodically getting the play field to the next generation
+     */
+    ScheduledExecutorService executor;
+
 
     /**
      * Main method launching the main GUI.
@@ -90,6 +97,8 @@ public class GameGui extends Application {
     public void start(Stage stage) {
         // ------------------ PlayField Object ------------------
         PlayField playField = new PlayField(15, 15);
+        playField.setReanimateRule(3);
+        playField.setKeepLifeRule(2, 3);
 
 
         // ------------------ GameGui Layout ------------------
@@ -170,7 +179,7 @@ public class GameGui extends Application {
         settingsGrid.add(curGenLabel, 0, 1);
         GridPane.setColumnSpan(curGenLabel, 2);
 
-        Label curGenNumLabel = new Label("0");
+        Label curGenNumLabel = new Label(Integer.toString(playField.getGeneration()));
         GridPane.setHalignment(curGenNumLabel, HPos.CENTER);
         settingsGrid.add(curGenNumLabel, 2, 1);
 
@@ -268,23 +277,23 @@ public class GameGui extends Application {
         GridPane.setHalignment(gameRulesBt, HPos.CENTER);
         settingsGrid.add(gameRulesBt, 2, 10);
 
-        Label deadRuleLabel = new Label("Dead becomes alive");
-        settingsGrid.add(deadRuleLabel, 0, 11);
-        GridPane.setColumnSpan(deadRuleLabel, 2);
+        Label reanimateRuleLabel = new Label("Reanimate Rule");
+        settingsGrid.add(reanimateRuleLabel, 0, 11);
+        GridPane.setColumnSpan(reanimateRuleLabel, 2);
 
-        TextField deadRuleTf = new TextField();
-        deadRuleTf.setPromptText("x,x");
-        deadRuleTf.setMaxWidth(55);
-        settingsGrid.add(deadRuleTf, 2, 11);
+        TextField reanimateRuleTf = new TextField(playField.getReanimateRule());
+        reanimateRuleTf.setPromptText("x,x");
+        reanimateRuleTf.setMaxWidth(55);
+        settingsGrid.add(reanimateRuleTf, 2, 11);
 
-        Label lifeRuleLabel = new Label("Life lives on");
-        settingsGrid.add(lifeRuleLabel, 0, 12);
-        GridPane.setColumnSpan(lifeRuleLabel, 2);
+        Label keepLifeRuleLabel = new Label("Keep Alive Rule");
+        settingsGrid.add(keepLifeRuleLabel, 0, 12);
+        GridPane.setColumnSpan(keepLifeRuleLabel, 2);
 
-        TextField lifeRuleTf = new TextField();
-        lifeRuleTf.setPromptText("x,x");
-        lifeRuleTf.setMaxWidth(55);
-        settingsGrid.add(lifeRuleTf, 2, 12);
+        TextField keepLifeRuleTf = new TextField(playField.getKeepLifeRule());
+        keepLifeRuleTf.setPromptText("x,x");
+        keepLifeRuleTf.setMaxWidth(55);
+        settingsGrid.add(keepLifeRuleTf, 2, 12);
 
 
         // Presets
@@ -352,38 +361,91 @@ public class GameGui extends Application {
         // ------------------ Event Handlers ------------------
 
         // Change the size of the play field to the values of the text fields
-        Pattern pattern = Pattern.compile("^\\d+$");
+        Pattern dimensionPat = Pattern.compile("^\\d+$");
         setDimensionBt.setOnAction(e -> {
-            boolean validXDim = pattern.matcher(xDimTf.getText()).matches();
-            boolean validYDim = pattern.matcher(yDimTf.getText()).matches();
+            String xDim = xDimTf.getText();
+            String yDim = yDimTf.getText();
+
+            boolean validXDim = dimensionPat.matcher(xDim).matches();
+            boolean validYDim = dimensionPat.matcher(yDim).matches();
 
             // If X dimension is invalid -> Display Error Message
             if (!validXDim) {
-                errorDialog(stage, "Input Error", "The X dimension (\"" + xDimTf.getText() + "\") is not valid!", "Only integers are allowed.");
-                xDimTf.setText("");
+                errorDialog(stage, "Input Error", "The X dimension (\"" + xDim + "\") is not valid!", "Only integers are allowed.");
+                xDimTf.setText(Integer.toString(playField.getDimensionX()));
             }
 
             // If Y dimension is invalid -> Display Error Message
             if (!validYDim) {
-                errorDialog(stage, "Input Error", "The Y dimension (\"" + yDimTf.getText() + "\") is not valid!", "Only integers are allowed.");
-                yDimTf.setText("");
+                errorDialog(stage, "Input Error", "The Y dimension (\"" + yDim + "\") is not valid!", "Only integers are allowed.");
+                yDimTf.setText(Integer.toString(playField.getDimensionY()));
             }
 
             // If both inputs are valid -> set the dimensions of the playground and the size of the canvas
             if (validXDim && validYDim) {
-                playField.setSize(Integer.parseInt(xDimTf.getText()), Integer.parseInt(yDimTf.getText()));
+                pauseGame(stage);
+                playField.setSize(Integer.parseInt(xDim), Integer.parseInt(yDim));
                 drawPlayField(playField);
             }
         });
 
-        playBt.setOnAction(e -> System.out.println("Start Game"));
-        pauseBt.setOnAction(e -> System.out.println("Pause Game"));
+
+        // Runnable, which is periodically called from the ScheduledExecutorService, to get the play field to the next generation
+        Runnable runGame = () -> {
+            curGenNumLabel.setText(Integer.toString(playField.getGeneration()));
+            System.out.println("Next Generation");
+        };
+
+        // Start the game -> initialise ScheduledExecutorService
+        playBt.setOnAction(e -> {
+            System.out.println("Start Game");
+            executor = Executors.newScheduledThreadPool(1);
+            executor.scheduleAtFixedRate(runGame, 0, 1, TimeUnit.SECONDS);
+        });
+
+        // Pause the game -> Stop the ScheduledExecutorService
+        pauseBt.setOnAction(e -> {
+            pauseGame(stage);
+        });
+
+
         stepBackBt.setOnAction(e -> System.out.println("1-Step Back"));
         stepForwardBt.setOnAction(e -> System.out.println("1-Step Forward"));
         resetBt.setOnAction(e -> System.out.println("Reset Game"));
         resetToStartBt.setOnAction(e -> System.out.println("Reset Game to Start"));
         setSpeedBt.setOnAction(e -> System.out.println("Set Game Speed"));
-        gameRulesBt.setOnAction(e -> System.out.println("Set Game Rules"));
+
+
+        // Change the game rules of the play field to the values of the text fields
+        Pattern gameRulePat = Pattern.compile("^([0-8],)*[0-8]$");
+        gameRulesBt.setOnAction(e -> {
+            String reanimateRule = reanimateRuleTf.getText();
+            String keepLifeRule = keepLifeRuleTf.getText();
+
+            boolean validReanimateRule = gameRulePat.matcher(reanimateRule).matches();
+            boolean validKeepLifeRule = gameRulePat.matcher(keepLifeRule).matches();
+
+            String errorExplanation = "The rule is valid if it contains one or more integers (from 0 to 8), separated with a comma (\",\").";
+
+            // If Reanimate Rule is invalid -> Display Error Message
+            if (!validReanimateRule) {
+                errorDialog(stage, "Input Error", "The Reanimate Rule (\"" + reanimateRule + "\") is not valid!", errorExplanation);
+                reanimateRuleTf.setText(playField.getReanimateRule());
+            }
+
+            // If Keep Alive Rule is invalid -> Display Error Message
+            if (!validKeepLifeRule) {
+                errorDialog(stage, "Input Error", "The Keep Alive Rule (\"" + keepLifeRule + "\") is not valid!", errorExplanation);
+                keepLifeRuleTf.setText(playField.getKeepLifeRule());
+            }
+
+            // If both inputs are valid -> set the game rules to the input values
+            if (validReanimateRule & validKeepLifeRule) {
+                playField.setReanimateRule(reanimateRule);
+                playField.setKeepLifeRule(keepLifeRule);
+            }
+        });
+
 
         // Load the selected preset (file) from the dropdown menu of the presetBox
         presetBox.setOnAction(e -> {
@@ -397,7 +459,6 @@ public class GameGui extends Application {
                 errorDialog(stage, "IOException", "Could not read the file!", String.valueOf(ioException.getCause()));
             }
         });
-
 
         FileChooser fileChooser = new FileChooser();
 
@@ -441,7 +502,9 @@ public class GameGui extends Application {
             }
         });
 
+
         analysisBt.setOnAction(e -> System.out.println("Show Analysis"));
+
 
         // Zoom Slider for zooming into the game Canvas
         zoomSlider.valueProperty().addListener(e -> {
@@ -449,6 +512,7 @@ public class GameGui extends Application {
             sizePerCell = (int) (DEFAULT_SIZE_PER_CELL * zoomSlider.getValue());
             drawPlayField(playField);
         });
+
 
         // Change the value of a cell to living or dead
         gameCanvas.setOnMouseClicked(e -> {
@@ -532,6 +596,7 @@ public class GameGui extends Application {
     void loadPreset(Stage stage, PlayField playField, Path srcPath, TextField xDimTf, TextField yDimTf) throws IOException {
         // Load the file -> if not possible -> show Error Dialog
         if (playField.loadFromCSV(Files.readAllLines(srcPath))) {
+            pauseGame(stage);
             drawPlayField(playField);
             xDimTf.setText(Integer.toString(playField.getDimensionX()));
             yDimTf.setText(Integer.toString(playField.getDimensionY()));
@@ -568,6 +633,17 @@ public class GameGui extends Application {
         }
 
         presetBox.setItems(presetList);
+    }
+
+    /**
+     * Pause the game -> stop the ScheduledExecutorService
+     *
+     * @param stage top level JavaFX container for the main GUI
+     */
+    void pauseGame(Stage stage) {
+        if (executor != null) {
+            executor.shutdown();
+        }
     }
 
 }

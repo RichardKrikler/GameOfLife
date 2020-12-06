@@ -1,5 +1,6 @@
 package gameoflife;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -16,6 +17,22 @@ public class PlayField {
     private int[][] playField;
 
     /**
+     * Stores the current number of generation
+     */
+    private int generationCount = 0;
+
+    /**
+     * Stores the numbers of living cells needed to make a dead cell alive
+     */
+    private HashSet<Integer> reanimateRule = new HashSet<>();
+
+    /**
+     * Stores the numbers of living cells needed to keep a cell alive
+     */
+    private HashSet<Integer> keepLifeRule = new HashSet<>();
+
+
+    /**
      * PlayField Constructor
      *
      * @param dimensionX x dimension of the play field
@@ -24,6 +41,7 @@ public class PlayField {
     PlayField(int dimensionX, int dimensionY) {
         setSize(dimensionX, dimensionY);
     }
+
 
     /**
      * Override the playField array with a new int array, with new dimensions.
@@ -34,6 +52,7 @@ public class PlayField {
     void setSize(int dimensionX, int dimensionY) {
         this.playField = new int[dimensionY][dimensionX];
     }
+
 
     /**
      * Get the x dimension of the play field
@@ -52,6 +71,7 @@ public class PlayField {
     int getDimensionY() {
         return playField.length;
     }
+
 
     /**
      * Get the stored value of a specific cell.
@@ -73,6 +93,78 @@ public class PlayField {
     void setCell(int posX, int posY, int value) {
         this.playField[posY][posX] = value;
     }
+
+
+    /**
+     * Get the current generation
+     *
+     * @return integer of the generation
+     */
+    int getGeneration() {
+        return this.generationCount;
+    }
+
+
+    /**
+     * Set the field, that stores the needed cells for reanimation
+     *
+     * @param cellsNeeded cells needed to reanimate a dead cell
+     */
+    void setReanimateRule(int... cellsNeeded) {
+        this.reanimateRule.clear();
+        for (int neededCell : cellsNeeded) {
+            this.reanimateRule.add(neededCell);
+        }
+    }
+
+    /**
+     * Call the setReanimateRule method with an input String
+     *
+     * @param cellsNeeded String of the needed cells, separated via ","
+     */
+    void setReanimateRule(String cellsNeeded) {
+        setReanimateRule(stringArToIntAr(cellsNeeded.split(",")));
+    }
+
+    /**
+     * Get the cells needed for reanimation.
+     *
+     * @return String of the Reanimation Rule
+     */
+    String getReanimateRule() {
+        return this.reanimateRule.toString().replaceAll("[\\[\\]\\s]", "");
+    }
+
+    /**
+     * Set the field, that stores the needed cells for keeping a cell
+     *
+     * @param cellsNeeded cells needed to keep a cell alive
+     */
+    void setKeepLifeRule(int... cellsNeeded) {
+        this.keepLifeRule.clear();
+        for (int neededCell : cellsNeeded) {
+            this.keepLifeRule.add(neededCell);
+        }
+    }
+
+    /**
+     * Call the setKeepLifeRule method with an input String
+     *
+     * @param cellsNeeded String of the needed cells, separated via ","
+     */
+    void setKeepLifeRule(String cellsNeeded) {
+        setKeepLifeRule(stringArToIntAr(cellsNeeded.split(",")));
+    }
+
+    /**
+     * Get the cells needed to keep a cell alive.
+     *
+     * @return String of the Keep Alive Rule
+     */
+    String getKeepLifeRule() {
+        return this.keepLifeRule.toString().replaceAll("[\\[\\]\\s]", "");
+    }
+
 
     /**
      * Convert the play field to CSV format
@@ -122,15 +214,25 @@ public class PlayField {
                 return false;
             }
 
-            int[] oneLineIntAr = new int[dimensionX];
-            for (int j = 0; j < oneLineStAr.length; j++) {
-                oneLineIntAr[j] = Integer.parseInt(oneLineStAr[j]);
-            }
-
+            int[] oneLineIntAr = stringArToIntAr(oneLineStAr);
             newPlayField[i] = oneLineIntAr;
         }
 
         this.playField = newPlayField;
         return true;
+    }
+
+    /**
+     * Convert a String array to an int array
+     *
+     * @param input String array
+     * @return int array
+     */
+    private int[] stringArToIntAr(String[] input) {
+        int[] result = new int[input.length];
+        for (int j = 0; j < input.length; j++) {
+            result[j] = Integer.parseInt(input[j]);
+        }
+        return result;
     }
 }
