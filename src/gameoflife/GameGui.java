@@ -189,7 +189,7 @@ public class GameGui extends Application {
         settingsGrid.add(curLivingLabel, 0, 2);
         GridPane.setColumnSpan(curLivingLabel, 2);
 
-        Label curLivingNumLabel = new Label("0");
+        Label curLivingNumLabel = new Label(Integer.toString(playField.getLivingCells()));
         GridPane.setHalignment(curLivingNumLabel, HPos.CENTER);
         settingsGrid.add(curLivingNumLabel, 2, 2);
 
@@ -387,6 +387,7 @@ public class GameGui extends Application {
                 pauseGame();
                 playField.setSize(Integer.parseInt(xDim), Integer.parseInt(yDim));
                 drawPlayField(playField);
+                curLivingNumLabel.setText(Integer.toString(playField.getLivingCells()));
             }
         });
 
@@ -470,6 +471,8 @@ public class GameGui extends Application {
                     String selectedItem = presetBox.getSelectionModel().getSelectedItem();
                     loadPreset(stage, playField, this.presets.get(selectedItem), xDimTf, yDimTf);
                     presetBox.getSelectionModel().select(0);
+
+                    curLivingNumLabel.setText(Integer.toString(playField.getLivingCells()));
                 }
             } catch (IOException ioException) {
                 errorDialog(stage, "IOException", "Could not read the file!", String.valueOf(ioException.getCause()));
@@ -495,6 +498,7 @@ public class GameGui extends Application {
             if (srcFile != null) {
                 try {
                     loadPreset(stage, playField, srcFile.toPath(), xDimTf, yDimTf);
+                    curLivingNumLabel.setText(Integer.toString(playField.getLivingCells()));
                 } catch (IOException ioException) {
                     errorDialog(stage, "IOException", "Could not read the file!", String.valueOf(ioException.getCause()));
                 }
@@ -536,14 +540,18 @@ public class GameGui extends Application {
             int posX = (int) ((e.getSceneX() - gameCanvas.getLayoutX()) / sizePerCell);
             int posY = (int) ((e.getSceneY() - gameCanvas.getLayoutY()) / sizePerCell);
 
-            // If it is a living cell -> dead
-            if (playField.getCell(posX, posY) == 1) {
-                playField.setCell(posX, posY, 0);
-            } else {
-                playField.setCell(posX, posY, 1);
+            // If the positions are within the size of the play field
+            if (posX < playField.getDimensionX() && posY < playField.getDimensionY()) {
+                // If it is a living cell -> dead
+                if (playField.getCell(posX, posY) == 1) {
+                    playField.setCell(posX, posY, 0);
+                } else {
+                    playField.setCell(posX, posY, 1);
+                }
             }
 
             drawPlayField(playField);
+            curLivingNumLabel.setText(Integer.toString(playField.getLivingCells()));
         });
     }
 

@@ -1,5 +1,6 @@
 package gameoflife;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -258,5 +259,25 @@ public class PlayField {
             result[j] = Integer.parseInt(input[j]);
         }
         return result;
+    }
+
+
+    /**
+     * Get the amount of living cells in the play field
+     *
+     * @return integer value with the counted cells
+     */
+    int getLivingCells() {
+        int[] livingCells = {0};
+
+        for (int i = 0; i < getDimensionY(); i++) {
+            for (int j = 0; j < getDimensionX(); j++) {
+                if (getCell(j, i) == 1) {
+                    livingCells[0]++;
+                }
+            }
+        }
+
+        return livingCells[0];
     }
 }
