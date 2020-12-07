@@ -22,6 +22,11 @@ public class PlayField {
     private int generationCount = 0;
 
     /**
+     * Stores the Game Speed of the game
+     */
+    private float gameSpeed;
+
+    /**
      * Stores the numbers of living cells needed to make a dead cell alive
      */
     private HashSet<Integer> reanimateRule = new HashSet<>();
@@ -102,6 +107,25 @@ public class PlayField {
      */
     int getGeneration() {
         return this.generationCount;
+    }
+
+
+    /**
+     * Set the value of the Game Speed
+     *
+     * @param gameSpeed floating point value, which contains the game speed
+     */
+    void setGameSpeed(float gameSpeed) {
+        this.gameSpeed = gameSpeed;
+    }
+
+    /**
+     * Get the current Game Speed of the game
+     *
+     * @return floating point value of the game speed
+     */
+    float getGameSpeed() {
+        return this.gameSpeed;
     }
 
 

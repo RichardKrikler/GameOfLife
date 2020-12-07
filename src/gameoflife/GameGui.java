@@ -97,6 +97,7 @@ public class GameGui extends Application {
     public void start(Stage stage) {
         // ------------------ PlayField Object ------------------
         PlayField playField = new PlayField(15, 15);
+        playField.setGameSpeed(1);
         playField.setReanimateRule(3);
         playField.setKeepLifeRule(2, 3);
 
@@ -256,7 +257,7 @@ public class GameGui extends Application {
         settingsGrid.add(gameSpeedLabel, 0, 8);
         GridPane.setColumnSpan(gameSpeedLabel, 3);
 
-        TextField speedTf = new TextField();
+        TextField speedTf = new TextField(Float.toString(playField.getGameSpeed()));
         speedTf.setPromptText("Speed");
         speedTf.setMaxWidth(55);
         settingsGrid.add(speedTf, 0, 9);
@@ -383,7 +384,7 @@ public class GameGui extends Application {
 
             // If both inputs are valid -> set the dimensions of the playground and the size of the canvas
             if (validXDim && validYDim) {
-                pauseGame(stage);
+                pauseGame();
                 playField.setSize(Integer.parseInt(xDim), Integer.parseInt(yDim));
                 drawPlayField(playField);
             }
@@ -400,20 +401,35 @@ public class GameGui extends Application {
         playBt.setOnAction(e -> {
             System.out.println("Start Game");
             executor = Executors.newScheduledThreadPool(1);
-            executor.scheduleAtFixedRate(runGame, 0, 1, TimeUnit.SECONDS);
+            executor.scheduleAtFixedRate(runGame, 0, (long) (playField.getGameSpeed() * 1000), TimeUnit.MILLISECONDS);
         });
 
         // Pause the game -> Stop the ScheduledExecutorService
-        pauseBt.setOnAction(e -> {
-            pauseGame(stage);
-        });
+        pauseBt.setOnAction(e -> pauseGame());
 
 
         stepBackBt.setOnAction(e -> System.out.println("1-Step Back"));
         stepForwardBt.setOnAction(e -> System.out.println("1-Step Forward"));
         resetBt.setOnAction(e -> System.out.println("Reset Game"));
         resetToStartBt.setOnAction(e -> System.out.println("Reset Game to Start"));
-        setSpeedBt.setOnAction(e -> System.out.println("Set Game Speed"));
+
+
+        // Change the game speed of the play field to the value of the text field
+        Pattern gameSpeedPat = Pattern.compile("^((\\d+\\.\\d{1,3})|(\\d+)|(\\.\\d{1,3}))$");
+        setSpeedBt.setOnAction(e -> {
+            String gameSpeed = speedTf.getText();
+
+            // If Game Speed is valid -> pause the game and set the game speed
+            // Otherwise -> Display Error Message
+            if (gameSpeedPat.matcher(gameSpeed).matches()) {
+                pauseGame();
+                playField.setGameSpeed(Float.parseFloat(gameSpeed));
+            } else {
+                errorDialog(stage, "Input Error", "The Game Speed (\"" + gameSpeed + "\") is not valid!", "Only integers or floating point values are allowed. " +
+                        "There is a maximum of 3 decimal points. The values are interpreted in seconds.");
+                speedTf.setText(Float.toString(playField.getGameSpeed()));
+            }
+        });
 
 
         // Change the game rules of the play field to the values of the text fields
@@ -596,7 +612,7 @@ public class GameGui extends Application {
     void loadPreset(Stage stage, PlayField playField, Path srcPath, TextField xDimTf, TextField yDimTf) throws IOException {
         // Load the file -> if not possible -> show Error Dialog
         if (playField.loadFromCSV(Files.readAllLines(srcPath))) {
-            pauseGame(stage);
+            pauseGame();
             drawPlayField(playField);
             xDimTf.setText(Integer.toString(playField.getDimensionX()));
             yDimTf.setText(Integer.toString(playField.getDimensionY()));
@@ -637,10 +653,8 @@ public class GameGui extends Application {
 
     /**
      * Pause the game -> stop the ScheduledExecutorService
-     *
-     * @param stage top level JavaFX container for the main GUI
      */
-    void pauseGame(Stage stage) {
+    void pauseGame() {
         if (executor != null) {
             executor.shutdown();
         }
