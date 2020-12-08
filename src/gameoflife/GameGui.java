@@ -10,10 +10,6 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
@@ -410,7 +406,18 @@ public class GameGui extends Application {
 
 
         stepBackBt.setOnAction(e -> System.out.println("1-Step Back"));
-        stepForwardBt.setOnAction(e -> System.out.println("1-Step Forward"));
+
+
+        // Get the play field to the next generation
+        stepForwardBt.setOnAction(e -> {
+            if (playField.stepForward()) {
+                drawPlayField(playField);
+                curGenNumLabel.setText(Integer.toString(playField.getGeneration()));
+                curLivingNumLabel.setText(Integer.toString(playField.getLivingCells()));
+            }
+        });
+
+
         resetBt.setOnAction(e -> System.out.println("Reset Game"));
         resetToStartBt.setOnAction(e -> System.out.println("Reset Game to Start"));
 
@@ -571,22 +578,22 @@ public class GameGui extends Application {
         gc.clearRect(0, 0, canvasW, canvasH);
 
         // Draw Cells
-        for (int i = 0; i < playField.getDimensionY(); i++) {
-            for (int j = 0; j < playField.getDimensionX(); j++) {
-                if (playField.getCell(j, i) == 1) {
+        for (int y = 0; y < playField.getDimensionY(); y++) {
+            for (int x = 0; x < playField.getDimensionX(); x++) {
+                if (playField.getCell(x, y) == 1) {
                     gc.setFill(Color.web("98E35B"));
-                    gc.fillRect(j * sizePerCell, i * sizePerCell, sizePerCell, sizePerCell);
+                    gc.fillRect(x * sizePerCell, y * sizePerCell, sizePerCell, sizePerCell);
                 }
             }
         }
 
         // Draw Grid
-        for (int i = 0; i <= playField.getDimensionX(); i++) {
-            gc.strokeLine(i * sizePerCell, 0, i * sizePerCell, canvasH);
+        for (int x = 0; x <= playField.getDimensionX(); x++) {
+            gc.strokeLine(x * sizePerCell, 0, x * sizePerCell, canvasH);
         }
 
-        for (int i = 0; i <= playField.getDimensionY(); i++) {
-            gc.strokeLine(0, i * sizePerCell, canvasW, i * sizePerCell);
+        for (int y = 0; y <= playField.getDimensionY(); y++) {
+            gc.strokeLine(0, y * sizePerCell, canvasW, y * sizePerCell);
         }
     }
 

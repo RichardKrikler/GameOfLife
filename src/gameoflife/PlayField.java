@@ -199,12 +199,12 @@ public class PlayField {
     String convertToCSV() {
         StringBuilder csv = new StringBuilder();
 
-        for (int i = 0; i < this.getDimensionY(); i++) {
-            for (int j = 0; j < this.getDimensionX(); j++) {
-                if (j + 1 < this.getDimensionX()) {
-                    csv.append(this.getCell(j, i)).append(",");
+        for (int y = 0; y < this.getDimensionY(); y++) {
+            for (int x = 0; x < this.getDimensionX(); x++) {
+                if (x + 1 < this.getDimensionX()) {
+                    csv.append(this.getCell(x, y)).append(",");
                 } else {
-                    csv.append(this.getCell(j, i));
+                    csv.append(this.getCell(x, y));
                 }
             }
             csv.append(System.lineSeparator());
@@ -229,18 +229,18 @@ public class PlayField {
         int dimensionX = playField.get(0).split(",").length;
         int dimensionY = playField.size();
 
-        for (int i = 0; i < dimensionY; i++) {
-            if (!validLine.matcher(playField.get(i)).matches()) {
+        for (int y = 0; y < dimensionY; y++) {
+            if (!validLine.matcher(playField.get(y)).matches()) {
                 return false;
             }
 
-            String[] oneLineStAr = playField.get(i).split(",");
+            String[] oneLineStAr = playField.get(y).split(",");
             if (oneLineStAr.length != dimensionX) {
                 return false;
             }
 
             int[] oneLineIntAr = stringArToIntAr(oneLineStAr);
-            newPlayField[i] = oneLineIntAr;
+            newPlayField[y] = oneLineIntAr;
         }
 
         this.playField = newPlayField;
@@ -255,12 +255,11 @@ public class PlayField {
      */
     private int[] stringArToIntAr(String[] input) {
         int[] result = new int[input.length];
-        for (int j = 0; j < input.length; j++) {
-            result[j] = Integer.parseInt(input[j]);
+        for (int y = 0; y < input.length; y++) {
+            result[y] = Integer.parseInt(input[y]);
         }
         return result;
     }
-
 
     /**
      * Get the amount of living cells in the play field
@@ -270,14 +269,60 @@ public class PlayField {
     int getLivingCells() {
         int[] livingCells = {0};
 
-        for (int i = 0; i < getDimensionY(); i++) {
-            for (int j = 0; j < getDimensionX(); j++) {
-                if (getCell(j, i) == 1) {
+        for (int y = 0; y < getDimensionY(); y++) {
+            for (int x = 0; x < getDimensionX(); x++) {
+                if (getCell(x, y) == 1) {
                     livingCells[0]++;
                 }
             }
         }
 
         return livingCells[0];
+    }
+
+    /**
+     * Get the play field to the next generation
+     *
+     * @return true if it was possible to go to the next generation
+     */
+    boolean stepForward() {
+        int[][] newPlayField = new int[getDimensionY()][getDimensionX()];
+
+        for (int y = 0; y < getDimensionY(); y++) {
+            for (int x = 0; x < getDimensionX(); x++) {
+                int surroundedLivingCells = 0;
+
+                // Go through the surrounding cells of the cell at (x|y)
+                for (int yRad = y - 1; yRad <= y + 1; yRad++) {
+                    for (int xRad = x - 1; xRad <= x + 1; xRad++) {
+                        // Make sure that the surrounded cell is not out of bounds or at the same place as the original cell
+                        if ((!(yRad == y && xRad == x)) &&
+                                (yRad >= 0 && yRad < getDimensionY()) &&
+                                (xRad >= 0 && xRad < getDimensionX())) {
+                            // Increase the surroundedLivingCells variable with the value of the cell
+                            surroundedLivingCells += getCell(xRad, yRad);
+                        }
+                    }
+                }
+
+                // Go through the rules and change the value of the cell if necessary
+                if (reanimateRule.contains(surroundedLivingCells) && getCell(x, y) == 0) {
+                    newPlayField[y][x] = 1;
+                } else if (keepLifeRule.contains(surroundedLivingCells) && getCell(x, y) == 1) {
+                    newPlayField[y][x] = 1;
+                } else {
+                    newPlayField[y][x] = 0;
+                }
+            }
+        }
+
+        // If the current play field has not changed -> return false
+        if (Arrays.deepEquals(playField, newPlayField)) {
+            return false;
+        } else {
+            playField = newPlayField;
+            generationCount++;
+            return true;
+        }
     }
 }
