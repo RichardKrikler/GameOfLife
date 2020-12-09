@@ -110,6 +110,13 @@ public class PlayField {
         return this.generationCount;
     }
 
+    /**
+     * Reset the generation count to zero
+     */
+    void resetGeneration() {
+        this.generationCount = 0;
+    }
+
 
     /**
      * Set the value of the Game Speed

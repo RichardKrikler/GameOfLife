@@ -1,6 +1,7 @@
 package gameoflife;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.HPos;
@@ -390,8 +391,18 @@ public class GameGui extends Application {
 
         // Runnable, which is periodically called from the ScheduledExecutorService, to get the play field to the next generation
         Runnable runGame = () -> {
-            curGenNumLabel.setText(Integer.toString(playField.getGeneration()));
-            System.out.println("Next Generation");
+            if (playField.stepForward()) {
+                drawPlayField(playField);
+
+                // runLater to prevent IllegalStateException -> run later in Application thread
+                // often updating GUI elements can only be done in the Application thread
+                Platform.runLater(() -> {
+                    curGenNumLabel.setText(Integer.toString(playField.getGeneration()));
+                    curLivingNumLabel.setText(Integer.toString(playField.getLivingCells()));
+                });
+            } else {
+                pauseGame();
+            }
         };
 
         // Start the game -> initialise ScheduledExecutorService
@@ -418,7 +429,17 @@ public class GameGui extends Application {
         });
 
 
-        resetBt.setOnAction(e -> System.out.println("Reset Game"));
+        // Reset the complete game and display the changes
+        resetBt.setOnAction(e -> {
+            playField.setSize(playField.getDimensionX(), playField.getDimensionY());
+            playField.resetGeneration();
+
+            drawPlayField(playField);
+            curGenNumLabel.setText(Integer.toString(playField.getGeneration()));
+            curLivingNumLabel.setText(Integer.toString(playField.getLivingCells()));
+        });
+
+
         resetToStartBt.setOnAction(e -> System.out.println("Reset Game to Start"));
 
 
@@ -479,6 +500,7 @@ public class GameGui extends Application {
                     loadPreset(stage, playField, this.presets.get(selectedItem), xDimTf, yDimTf);
                     presetBox.getSelectionModel().select(0);
 
+                    curGenNumLabel.setText(Integer.toString(playField.getGeneration()));
                     curLivingNumLabel.setText(Integer.toString(playField.getLivingCells()));
                 }
             } catch (IOException ioException) {
@@ -505,6 +527,7 @@ public class GameGui extends Application {
             if (srcFile != null) {
                 try {
                     loadPreset(stage, playField, srcFile.toPath(), xDimTf, yDimTf);
+                    curGenNumLabel.setText(Integer.toString(playField.getGeneration()));
                     curLivingNumLabel.setText(Integer.toString(playField.getLivingCells()));
                 } catch (IOException ioException) {
                     errorDialog(stage, "IOException", "Could not read the file!", String.valueOf(ioException.getCause()));
@@ -631,6 +654,7 @@ public class GameGui extends Application {
             drawPlayField(playField);
             xDimTf.setText(Integer.toString(playField.getDimensionX()));
             yDimTf.setText(Integer.toString(playField.getDimensionY()));
+            playField.resetGeneration();
         } else {
             errorDialog(stage, "Loading File", "Could not load the file to the play field!", "Please check the file or try another one.");
         }
