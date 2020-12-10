@@ -407,11 +407,10 @@ public class GameGui extends Application {
         // Runnable, which is periodically called from the ScheduledExecutorService, to get the play field to the next generation
         Runnable runGame = () -> {
             if (playField.stepForward()) {
-                drawPlayField(playField);
-
                 // runLater to prevent IllegalStateException -> run later in Application thread
                 // often updating GUI elements can only be done in the Application thread
                 Platform.runLater(() -> {
+                    drawPlayField(playField);
                     curGenNumLabel.setText(Integer.toString(playField.getGeneration()));
                     curLivingNumLabel.setText(Integer.toString(playField.getLivingCells()));
                 });
@@ -495,7 +494,7 @@ public class GameGui extends Application {
 
 
         // Change the game speed of the play field to the value of the text field
-        Pattern gameSpeedPat = Pattern.compile("^((\\d+\\.\\d{1,3})|(\\d+)|(\\.\\d{1,3}))$");
+        Pattern gameSpeedPat = Pattern.compile("^([1-9]\\d*(\\.\\d*)?)|(\\d*\\.\\d{0,2}[1-9]0*)$");
         setSpeedBt.setOnAction(e -> {
             String gameSpeed = speedTf.getText();
 
@@ -506,7 +505,7 @@ public class GameGui extends Application {
                 playField.setGameSpeed(Float.parseFloat(gameSpeed));
             } else {
                 errorDialog(stage, "Input Error", "The Game Speed (\"" + gameSpeed + "\") is not valid!", "Only integers or floating point values are allowed. " +
-                        "There is a maximum of 3 decimal points. The values are interpreted in seconds.");
+                        "There is a maximum of 3 decimal points. The values are interpreted in seconds. Minimum value = 0.001");
                 speedTf.setText(Float.toString(playField.getGameSpeed()));
             }
         });
