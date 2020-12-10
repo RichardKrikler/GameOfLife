@@ -249,81 +249,96 @@ public class GameGui extends Application {
         settingsGrid.add(stepForwardBt, 2, 7);
 
 
+        // Got to step x
+        Label goToLabel = new Label("Go to:");
+        settingsGrid.add(goToLabel, 0, 8);
+
+        TextField goToTf = new TextField();
+        goToTf.setPromptText("Gen");
+        goToTf.setMaxWidth(55);
+        settingsGrid.add(goToTf, 1, 8);
+
+        Button goToBt = new Button("X");
+        goToBt.setTooltip(new Tooltip("Got to Generation"));
+        GridPane.setHalignment(goToBt, HPos.CENTER);
+        settingsGrid.add(goToBt, 2, 8);
+
+
         // Game Speed Control
         Label gameSpeedLabel = new Label("Game Speed (in s):");
-        settingsGrid.add(gameSpeedLabel, 0, 8);
+        settingsGrid.add(gameSpeedLabel, 0, 9);
         GridPane.setColumnSpan(gameSpeedLabel, 3);
 
         TextField speedTf = new TextField(Float.toString(playField.getGameSpeed()));
         speedTf.setPromptText("Speed");
         speedTf.setMaxWidth(55);
-        settingsGrid.add(speedTf, 0, 9);
+        settingsGrid.add(speedTf, 0, 10);
 
         Button setSpeedBt = new Button("X");
         setSpeedBt.setTooltip(new Tooltip("Set Game Speed"));
         GridPane.setHalignment(setSpeedBt, HPos.CENTER);
-        settingsGrid.add(setSpeedBt, 1, 9);
+        settingsGrid.add(setSpeedBt, 1, 10);
 
 
         // Change Game Rules
         Label gameRulesLabel = new Label("Game Rules:");
-        settingsGrid.add(gameRulesLabel, 0, 10);
+        settingsGrid.add(gameRulesLabel, 0, 11);
         GridPane.setColumnSpan(gameRulesLabel, 2);
 
         Button gameRulesBt = new Button("X");
         gameRulesBt.setTooltip(new Tooltip("Set Game Rules"));
         GridPane.setHalignment(gameRulesBt, HPos.CENTER);
-        settingsGrid.add(gameRulesBt, 2, 10);
+        settingsGrid.add(gameRulesBt, 2, 11);
 
         Label reanimateRuleLabel = new Label("Reanimate Rule");
-        settingsGrid.add(reanimateRuleLabel, 0, 11);
+        settingsGrid.add(reanimateRuleLabel, 0, 12);
         GridPane.setColumnSpan(reanimateRuleLabel, 2);
 
         TextField reanimateRuleTf = new TextField(playField.getReanimateRule());
         reanimateRuleTf.setPromptText("x,x");
         reanimateRuleTf.setMaxWidth(55);
-        settingsGrid.add(reanimateRuleTf, 2, 11);
+        settingsGrid.add(reanimateRuleTf, 2, 12);
 
         Label keepLifeRuleLabel = new Label("Keep Alive Rule");
-        settingsGrid.add(keepLifeRuleLabel, 0, 12);
+        settingsGrid.add(keepLifeRuleLabel, 0, 13);
         GridPane.setColumnSpan(keepLifeRuleLabel, 2);
 
         TextField keepLifeRuleTf = new TextField(playField.getKeepLifeRule());
         keepLifeRuleTf.setPromptText("x,x");
         keepLifeRuleTf.setMaxWidth(55);
-        settingsGrid.add(keepLifeRuleTf, 2, 12);
+        settingsGrid.add(keepLifeRuleTf, 2, 13);
 
 
         // Presets
         Label presetsLabel = new Label("Presets:");
-        settingsGrid.add(presetsLabel, 0, 13);
+        settingsGrid.add(presetsLabel, 0, 14);
         GridPane.setColumnSpan(presetsLabel, 3);
 
         ComboBox<String> presetBox = new ComboBox<>();
         listPresets(presetBox);
         presetBox.setMinWidth(150);
-        settingsGrid.add(presetBox, 0, 14);
+        settingsGrid.add(presetBox, 0, 15);
         GridPane.setColumnSpan(presetBox, 3);
         presetBox.prefWidth(settingsGrid.getWidth());
 
         Button loadPresetBt = new Button("Load");
         loadPresetBt.setTooltip(new Tooltip("Load a Preset"));
-        settingsGrid.add(loadPresetBt, 0, 15);
+        settingsGrid.add(loadPresetBt, 0, 16);
 
         Button savePresetBt = new Button("Save");
         savePresetBt.setTooltip(new Tooltip("Load a Preset"));
-        settingsGrid.add(savePresetBt, 1, 15);
+        settingsGrid.add(savePresetBt, 1, 16);
 
 
         // Game Analysis
         Label analysisLabel = new Label("Analysis:");
-        settingsGrid.add(analysisLabel, 0, 16);
+        settingsGrid.add(analysisLabel, 0, 17);
         GridPane.setColumnSpan(analysisLabel, 3);
 
         Button analysisBt = new Button("Show Analysis");
         analysisBt.setTooltip(new Tooltip("Show Game Analysis"));
         GridPane.setColumnSpan(analysisBt, 2);
-        settingsGrid.add(analysisBt, 0, 17);
+        settingsGrid.add(analysisBt, 0, 18);
 
 
         settingsGrid.setHgap(10);
@@ -359,13 +374,13 @@ public class GameGui extends Application {
         // ------------------ Event Handlers ------------------
 
         // Change the size of the play field to the values of the text fields
-        Pattern dimensionPat = Pattern.compile("^\\d+$");
+        Pattern integerPat = Pattern.compile("^\\d+$");
         setDimensionBt.setOnAction(e -> {
             String xDim = xDimTf.getText();
             String yDim = yDimTf.getText();
 
-            boolean validXDim = dimensionPat.matcher(xDim).matches();
-            boolean validYDim = dimensionPat.matcher(yDim).matches();
+            boolean validXDim = integerPat.matcher(xDim).matches();
+            boolean validYDim = integerPat.matcher(yDim).matches();
 
             // If X dimension is invalid -> Display Error Message
             if (!validXDim) {
@@ -416,7 +431,14 @@ public class GameGui extends Application {
         pauseBt.setOnAction(e -> pauseGame());
 
 
-        stepBackBt.setOnAction(e -> System.out.println("1-Step Back"));
+        // Get the play field to the last generation
+        stepBackBt.setOnAction(e -> {
+            if (playField.stepTo(playField.getGeneration() - 1)) {
+                drawPlayField(playField);
+                curGenNumLabel.setText(Integer.toString(playField.getGeneration()));
+                curLivingNumLabel.setText(Integer.toString(playField.getLivingCells()));
+            }
+        });
 
 
         // Get the play field to the next generation
@@ -429,8 +451,29 @@ public class GameGui extends Application {
         });
 
 
+        // Go the a specific Generation
+        goToBt.setOnAction(e -> {
+            String gen = goToTf.getText();
+            boolean validGen = integerPat.matcher(gen).matches();
+
+            if (validGen) {
+                // If generation is valid -> go to the generation x
+                if (playField.stepTo(Integer.parseInt(gen))) {
+                    drawPlayField(playField);
+                    curGenNumLabel.setText(Integer.toString(playField.getGeneration()));
+                    curLivingNumLabel.setText(Integer.toString(playField.getLivingCells()));
+                }
+            } else {
+                // If generation is invalid -> Display Error Message
+                errorDialog(stage, "Input Error", "The Generation (\"" + gen + "\") is not valid!", "Only integers are allowed.");
+                goToTf.setText("");
+            }
+        });
+
+
         // Reset the complete game and display the changes
         resetBt.setOnAction(e -> {
+            pauseGame();
             playField.setSize(playField.getDimensionX(), playField.getDimensionY());
             playField.resetGeneration();
 
@@ -440,7 +483,15 @@ public class GameGui extends Application {
         });
 
 
-        resetToStartBt.setOnAction(e -> System.out.println("Reset Game to Start"));
+        // Reset the play field to the state of generation zero
+        resetToStartBt.setOnAction(e -> {
+            pauseGame();
+            if (playField.stepTo(0)) {
+                drawPlayField(playField);
+                curGenNumLabel.setText(Integer.toString(playField.getGeneration()));
+                curLivingNumLabel.setText(Integer.toString(playField.getLivingCells()));
+            }
+        });
 
 
         // Change the game speed of the play field to the value of the text field

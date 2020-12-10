@@ -18,6 +18,12 @@ public class PlayField {
     private int[][] playField;
 
     /**
+     * Stores the play field at generation zero
+     * 2D int Array
+     */
+    private int[][] originalPlayField;
+
+    /**
      * Stores the current number of generation
      */
     private int generationCount = 0;
@@ -98,6 +104,9 @@ public class PlayField {
      */
     void setCell(int posX, int posY, int value) {
         this.playField[posY][posX] = value;
+        if (getGeneration() == 0) {
+            this.originalPlayField = this.playField;
+        }
     }
 
 
@@ -251,6 +260,8 @@ public class PlayField {
         }
 
         this.playField = newPlayField;
+        this.originalPlayField = this.playField;
+
         return true;
     }
 
@@ -331,5 +342,32 @@ public class PlayField {
             generationCount++;
             return true;
         }
+    }
+
+    /**
+     * Get the play field to the last generation
+     *
+     * @return true if it was possible to go to the last generation
+     */
+    boolean stepTo(int generation) {
+        if (generation < 0 || getGeneration() == generation) {
+            return false;
+        }
+
+        int startAt = 0;
+
+        if (getGeneration() > generation) {
+            this.playField = this.originalPlayField;
+            resetGeneration();
+        } else {
+            startAt = getGeneration();
+        }
+
+
+        for (int i = startAt; i < generation; i++) {
+            stepForward();
+        }
+
+        return true;
     }
 }
