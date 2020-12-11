@@ -75,6 +75,12 @@ public class GameGui extends Application {
      */
     ScheduledExecutorService executor;
 
+    /**
+     * Boolean value, which is true if the game should stop when the window is minimized into the taskbar
+     * The value is equals to the checkbox value (stopIfMinimizedCB)
+     */
+    boolean stopIfMinimized;
+
 
     /**
      * Main method launching the main GUI.
@@ -97,7 +103,7 @@ public class GameGui extends Application {
         playField.setGameSpeed(1);
         playField.setReanimateRule(3);
         playField.setKeepLifeRule(2, 3);
-
+        stopIfMinimized = true;
 
         // ------------------ GameGui Layout ------------------
         // Initialising a horizontal SplitPane
@@ -341,6 +347,19 @@ public class GameGui extends Application {
         settingsGrid.add(analysisBt, 0, 18);
 
 
+        // Stop game if the main window is minimized into the taskbar
+        Label stopIfMinimizedLabel = new Label("Stop game if minimized:");
+        stopIfMinimizedLabel.setTooltip(new Tooltip("Stop the game if the window is minimized into the taskbar."));
+        settingsGrid.add(stopIfMinimizedLabel, 0, 19);
+        GridPane.setColumnSpan(stopIfMinimizedLabel, 3);
+
+        CheckBox stopIfMinimizedCB = new CheckBox();
+        stopIfMinimizedCB.setSelected(stopIfMinimized);
+        GridPane.setHalignment(stopIfMinimizedCB, HPos.CENTER);
+        settingsGrid.add(stopIfMinimizedCB, 2, 19);
+
+
+
         settingsGrid.setHgap(10);
         settingsGrid.setVgap(10);
         settingsGrid.setPadding(new Insets(10));
@@ -407,8 +426,7 @@ public class GameGui extends Application {
         // Runnable, which is periodically called from the ScheduledExecutorService, to get the play field to the next generation
         Runnable runGame = () -> {
             if (playField.stepForward()) {
-                // runLater to prevent IllegalStateException -> run later in Application thread
-                // often updating GUI elements can only be done in the Application thread
+                // Updating GUI elements can only be done in the Application thread
                 Platform.runLater(() -> {
                     drawPlayField(playField);
                     curGenNumLabel.setText(Integer.toString(playField.getGeneration()));
@@ -632,6 +650,18 @@ public class GameGui extends Application {
 
             drawPlayField(playField);
             curLivingNumLabel.setText(Integer.toString(playField.getLivingCells()));
+        });
+
+
+        // Change the value of stopIfMinimized to the value of the according CheckBox (stopIfMinimizedCB)
+        stopIfMinimizedCB.selectedProperty().addListener(e -> stopIfMinimized = stopIfMinimizedCB.selectedProperty().getValue());
+
+        // Detect if the main window has been minimized into the taskbar
+        // If it has and the stopIfMinimized is true -> pause the game
+        stage.iconifiedProperty().addListener((ov, t, t1) -> {
+            if (t1 && stopIfMinimized) {
+                pauseGame();
+            }
         });
     }
 
