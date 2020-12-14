@@ -2,8 +2,6 @@ package gameoflife;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
-import java.util.regex.Pattern;
 
 /**
  * PlayField of the Game Of Life
@@ -36,12 +34,12 @@ public class PlayField {
     /**
      * Stores the numbers of living cells needed to make a dead cell alive
      */
-    private HashSet<Integer> reanimateRule = new HashSet<>();
+    private final HashSet<Integer> reanimateRule = new HashSet<>();
 
     /**
      * Stores the numbers of living cells needed to keep a cell alive
      */
-    private HashSet<Integer> keepLifeRule = new HashSet<>();
+    private final HashSet<Integer> keepLifeRule = new HashSet<>();
 
 
     /**
@@ -52,6 +50,25 @@ public class PlayField {
      */
     PlayField(int dimensionX, int dimensionY) {
         setSize(dimensionX, dimensionY);
+    }
+
+
+    /**
+     * Override the playField array
+     *
+     * @param playField int[][] array which contains the play field
+     */
+    void setPlayField(int[][] playField) {
+        this.playField = playField;
+    }
+
+    /**
+     * Override the original playField array
+     *
+     * @param originalPlayField int[][] array which contains the play field
+     */
+    void setOriginalPlayField(int[][] originalPlayField) {
+        this.originalPlayField = originalPlayField;
     }
 
 
@@ -164,7 +181,7 @@ public class PlayField {
      * @param cellsNeeded String of the needed cells, separated via ","
      */
     void setReanimateRule(String cellsNeeded) {
-        setReanimateRule(stringArToIntAr(cellsNeeded.split(",")));
+        setReanimateRule(GameGui.stringArToIntAr(cellsNeeded.split(",")));
     }
 
     /**
@@ -194,7 +211,7 @@ public class PlayField {
      * @param cellsNeeded String of the needed cells, separated via ","
      */
     void setKeepLifeRule(String cellsNeeded) {
-        setKeepLifeRule(stringArToIntAr(cellsNeeded.split(",")));
+        setKeepLifeRule(GameGui.stringArToIntAr(cellsNeeded.split(",")));
     }
 
     /**
@@ -206,78 +223,6 @@ public class PlayField {
         return this.keepLifeRule.toString().replaceAll("[\\[\\]\\s]", "");
     }
 
-
-    /**
-     * Convert the play field to CSV format
-     *
-     * @return String containing the play field
-     */
-    String convertToCSV() {
-        StringBuilder csv = new StringBuilder();
-
-        for (int y = 0; y < this.getDimensionY(); y++) {
-            for (int x = 0; x < this.getDimensionX(); x++) {
-                if (x + 1 < this.getDimensionX()) {
-                    csv.append(this.getCell(x, y)).append(",");
-                } else {
-                    csv.append(this.getCell(x, y));
-                }
-            }
-            csv.append(System.lineSeparator());
-        }
-
-        return csv.toString();
-    }
-
-    /**
-     * Convert the CSV format from a file into the play field
-     *
-     * @param playField List of the Lines stored in the file
-     * @return true if the conversion was successful
-     */
-    boolean loadFromCSV(List<String> playField) {
-        if (playField.size() < 1) {
-            return false;
-        }
-
-        Pattern validLine = Pattern.compile("^([10],)*[10]$");
-        int[][] newPlayField = new int[playField.size()][];
-        int dimensionX = playField.get(0).split(",").length;
-        int dimensionY = playField.size();
-
-        for (int y = 0; y < dimensionY; y++) {
-            if (!validLine.matcher(playField.get(y)).matches()) {
-                return false;
-            }
-
-            String[] oneLineStAr = playField.get(y).split(",");
-            if (oneLineStAr.length != dimensionX) {
-                return false;
-            }
-
-            int[] oneLineIntAr = stringArToIntAr(oneLineStAr);
-            newPlayField[y] = oneLineIntAr;
-        }
-
-        this.playField = newPlayField;
-        this.originalPlayField = this.playField;
-
-        return true;
-    }
-
-    /**
-     * Convert a String array to an int array
-     *
-     * @param input String array
-     * @return int array
-     */
-    private int[] stringArToIntAr(String[] input) {
-        int[] result = new int[input.length];
-        for (int y = 0; y < input.length; y++) {
-            result[y] = Integer.parseInt(input[y]);
-        }
-        return result;
-    }
 
     /**
      * Get the amount of living cells in the play field

@@ -2,8 +2,6 @@ package gameoflife;
 
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
@@ -14,13 +12,8 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -64,13 +57,6 @@ public class GameGui extends Application {
     GraphicsContext gc;
 
     /**
-     * Save the available presets in the resources/PlayFieldPresets in a Map
-     * String = name of the preset
-     * Path = location of the preset
-     */
-    HashMap<String, Path> presets = new HashMap<>();
-
-    /**
      * ExecutorService for periodically getting the play field to the next generation
      */
     ScheduledExecutorService executor;
@@ -80,6 +66,11 @@ public class GameGui extends Application {
      * The value is equals to the checkbox value (stopIfMinimizedCB)
      */
     boolean stopIfMinimized;
+
+    /**
+     * Store the path to the folder, which contains the presets
+     */
+    final String PRESET_PATH = "resources/PlayFieldPresets";
 
 
     /**
@@ -104,6 +95,9 @@ public class GameGui extends Application {
         playField.setReanimateRule(3);
         playField.setKeepLifeRule(2, 3);
         stopIfMinimized = true;
+
+        // ------------------ PresetManager ------------------
+        PresetManager presetManager = new PresetManager(stage, PRESET_PATH);
 
         // ------------------ GameGui Layout ------------------
         // Initialising a horizontal SplitPane
@@ -321,7 +315,7 @@ public class GameGui extends Application {
         GridPane.setColumnSpan(presetsLabel, 3);
 
         ComboBox<String> presetBox = new ComboBox<>();
-        listPresets(presetBox);
+        presetBox.setItems(presetManager.getObservableList());
         presetBox.setMinWidth(150);
         settingsGrid.add(presetBox, 0, 15);
         GridPane.setColumnSpan(presetBox, 3);
@@ -332,7 +326,7 @@ public class GameGui extends Application {
         settingsGrid.add(loadPresetBt, 0, 16);
 
         Button savePresetBt = new Button("Save");
-        savePresetBt.setTooltip(new Tooltip("Load a Preset"));
+        savePresetBt.setTooltip(new Tooltip("Save a Preset"));
         settingsGrid.add(savePresetBt, 1, 16);
 
 
@@ -357,7 +351,6 @@ public class GameGui extends Application {
         stopIfMinimizedCB.setSelected(stopIfMinimized);
         GridPane.setHalignment(stopIfMinimizedCB, HPos.CENTER);
         settingsGrid.add(stopIfMinimizedCB, 2, 19);
-
 
 
         settingsGrid.setHgap(10);
@@ -479,6 +472,7 @@ public class GameGui extends Application {
                     drawPlayField(playField);
                     curGenNumLabel.setText(Integer.toString(playField.getGeneration()));
                     curLivingNumLabel.setText(Integer.toString(playField.getLivingCells()));
+                    goToTf.setText(Integer.toString(playField.getGeneration()));
                 }
             } else {
                 // If generation is invalid -> Display Error Message
@@ -562,61 +556,25 @@ public class GameGui extends Application {
 
         // Load the selected preset (file) from the dropdown menu of the presetBox
         presetBox.setOnAction(e -> {
-            try {
-                if (!presetBox.getValue().equals("")) {
-                    String selectedItem = presetBox.getSelectionModel().getSelectedItem();
-                    loadPreset(stage, playField, this.presets.get(selectedItem), xDimTf, yDimTf);
-                    presetBox.getSelectionModel().select(0);
+            if (!presetBox.getValue().equals("")) {
+                String selectedItem = presetBox.getSelectionModel().getSelectedItem();
+                presetBox.getSelectionModel().select(0);
 
-                    curGenNumLabel.setText(Integer.toString(playField.getGeneration()));
-                    curLivingNumLabel.setText(Integer.toString(playField.getLivingCells()));
-                }
-            } catch (IOException ioException) {
-                errorDialog(stage, "IOException", "Could not read the file!", String.valueOf(ioException.getCause()));
+                int[][] newPlayField = presetManager.loadPreset(selectedItem);
+                updatePlayField(newPlayField, playField, xDimTf, yDimTf, curGenNumLabel, curLivingNumLabel);
             }
         });
 
-        FileChooser fileChooser = new FileChooser();
-
-        // File Extension = CSV
-        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("CSV files (*.csv)", "*.csv");
-        fileChooser.getExtensionFilters().add(extFilter);
-
-        // Initial / Default Directory = "resources/PlayFieldPresets"
-        fileChooser.setInitialDirectory(new File("resources/PlayFieldPresets"));
-
         // Load a preset into the play field
         loadPresetBt.setOnAction(e -> {
-            // Show the FileChooser open Dialog
-            File srcFile = fileChooser.showOpenDialog(stage);
-
-            // If the Dialog is cancelled or closed the value of destFile will be null
-            // If the selection is confirmed -> read the chosen file
-            if (srcFile != null) {
-                try {
-                    loadPreset(stage, playField, srcFile.toPath(), xDimTf, yDimTf);
-                    curGenNumLabel.setText(Integer.toString(playField.getGeneration()));
-                    curLivingNumLabel.setText(Integer.toString(playField.getLivingCells()));
-                } catch (IOException ioException) {
-                    errorDialog(stage, "IOException", "Could not read the file!", String.valueOf(ioException.getCause()));
-                }
-            }
+            int[][] newPlayField = presetManager.loadPreset();
+            updatePlayField(newPlayField, playField, xDimTf, yDimTf, curGenNumLabel, curLivingNumLabel);
         });
 
         // Save the current play field to a CSV file
         savePresetBt.setOnAction(e -> {
-            // Show the FileChooser save Dialog
-            File destFile = fileChooser.showSaveDialog(stage);
-
-            // If the Dialog is cancelled or closed the value of destFile will be null
-            // If the selection is confirmed -> write to the chosen file
-            if (destFile != null) {
-                try {
-                    Files.writeString(destFile.toPath(), playField.convertToCSV());
-                    listPresets(presetBox);
-                } catch (IOException ioException) {
-                    errorDialog(stage, "IOException", "Could not write to file!", String.valueOf(ioException.getCause()));
-                }
+            if (presetManager.savePreset(playField)) {
+                presetBox.setItems(presetManager.getObservableList());
             }
         });
 
@@ -718,59 +676,6 @@ public class GameGui extends Application {
     }
 
     /**
-     * Load a Preset from a File into the play field
-     *
-     * @param stage     top level JavaFX container for the main GUI
-     * @param playField PlayField Object containing the play field array
-     * @param srcPath   Source path of the Preset
-     * @param xDimTf    TextField for the Dimension input
-     * @param yDimTf    TextField for the Dimension input
-     * @throws IOException If the File could not be loaded properly
-     */
-    void loadPreset(Stage stage, PlayField playField, Path srcPath, TextField xDimTf, TextField yDimTf) throws IOException {
-        // Load the file -> if not possible -> show Error Dialog
-        if (playField.loadFromCSV(Files.readAllLines(srcPath))) {
-            pauseGame();
-            drawPlayField(playField);
-            xDimTf.setText(Integer.toString(playField.getDimensionX()));
-            yDimTf.setText(Integer.toString(playField.getDimensionY()));
-            playField.resetGeneration();
-        } else {
-            errorDialog(stage, "Loading File", "Could not load the file to the play field!", "Please check the file or try another one.");
-        }
-    }
-
-    /**
-     * Get all available Presets and list them into the ObservableList of the presetBox
-     *
-     * @param presetBox ComboBox, whose ObservableList contains all presets
-     */
-    void listPresets(ComboBox<String> presetBox) {
-        this.presets.clear();
-        File[] presetFiles = new File("resources/PlayFieldPresets").listFiles();
-        ObservableList<String> presetList;
-
-        // If there are no files found -> set the list to an empty string
-        // Otherwise list the files into the list without the ".csv" extension name
-        if (presetFiles == null) {
-            HashSet<String> emptySet = new HashSet<>();
-            emptySet.add("");
-            presetList = FXCollections.observableArrayList(emptySet);
-        } else {
-            this.presets.put("", null);
-            for (File presetFile : presetFiles) {
-                if (presetFile.isFile()) {
-                    this.presets.put(presetFile.getName().replaceAll(".csv", ""), presetFile.toPath());
-                }
-            }
-
-            presetList = FXCollections.observableArrayList(this.presets.keySet());
-        }
-
-        presetBox.setItems(presetList);
-    }
-
-    /**
      * Pause the game -> stop the ScheduledExecutorService
      */
     void pauseGame() {
@@ -779,4 +684,37 @@ public class GameGui extends Application {
         }
     }
 
+    /**
+     * Update the play field to a new array
+     *
+     * @param newPlayField int[][] array which contains the new play field
+     */
+    void updatePlayField(int[][] newPlayField, PlayField playField, TextField xDimTf, TextField yDimTf, Label curGenNumLabel, Label curLivingNumLabel) {
+        if (newPlayField != null) {
+            pauseGame();
+            playField.setPlayField(newPlayField);
+            playField.setOriginalPlayField(newPlayField);
+            playField.resetGeneration();
+            drawPlayField(playField);
+
+            xDimTf.setText(Integer.toString(playField.getDimensionX()));
+            yDimTf.setText(Integer.toString(playField.getDimensionY()));
+            curGenNumLabel.setText(Integer.toString(playField.getGeneration()));
+            curLivingNumLabel.setText(Integer.toString(playField.getLivingCells()));
+        }
+    }
+
+    /**
+     * Convert a String array to an int array
+     *
+     * @param input String array
+     * @return int array
+     */
+    static int[] stringArToIntAr(String[] input) {
+        int[] result = new int[input.length];
+        for (int y = 0; y < input.length; y++) {
+            result[y] = Integer.parseInt(input[y]);
+        }
+        return result;
+    }
 }
