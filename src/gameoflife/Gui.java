@@ -11,13 +11,9 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
 
 
 /**
@@ -25,7 +21,7 @@ import java.util.regex.Pattern;
  *
  * @author Richard Krikler
  */
-public class GameGui extends Application {
+public class Gui extends Application {
     /**
      * Width of the main GUI
      */
@@ -35,6 +31,11 @@ public class GameGui extends Application {
      * Height of the main GUI
      */
     final int GUI_HEIGHT = 550;
+
+    /**
+     * Stage: top level JavaFX container for the main GUI
+     */
+    Stage stage;
 
     /**
      * Default size per cell of the play field
@@ -72,6 +73,16 @@ public class GameGui extends Application {
      */
     final String PRESET_PATH = "resources/PlayFieldPresets";
 
+    /**
+     * Store the play field inside the PlayField Object
+     */
+    PlayField playField;
+
+    /**
+     * Store the preset manager (logic for the use of presets) inside the PresetManager Object
+     */
+    PresetManager presetManager;
+
 
     /**
      * Main method launching the main GUI.
@@ -89,17 +100,19 @@ public class GameGui extends Application {
      */
     @Override
     public void start(Stage stage) {
+        this.stage = stage;
+
         // ------------------ PlayField Object ------------------
-        PlayField playField = new PlayField(15, 15);
+        playField = new PlayField(15, 15);
         playField.setGameSpeed(1);
         playField.setReanimateRule(3);
         playField.setKeepLifeRule(2, 3);
         stopIfMinimized = true;
 
         // ------------------ PresetManager ------------------
-        PresetManager presetManager = new PresetManager(stage, PRESET_PATH);
+        presetManager = new PresetManager(stage, PRESET_PATH);
 
-        // ------------------ GameGui Layout ------------------
+        // ------------------ GUI Layout ------------------
         // Initialising a horizontal SplitPane
         SplitPane splitPane = new SplitPane();
         splitPane.setOrientation(Orientation.HORIZONTAL);
@@ -110,7 +123,6 @@ public class GameGui extends Application {
         // Only show the scroll bars if they are needed
         scrollPaneRight.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
         scrollPaneRight.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-
 
         // ------------------ Game Canvas ------------------
 
@@ -130,10 +142,9 @@ public class GameGui extends Application {
 
 
         gc = gameCanvas.getGraphicsContext2D();
-        drawPlayField(playField);
+        GuiLogic.drawPlayField(this);
 
-        // ------------------
-
+        // ------------------ Zoom Slider ------------------
 
         // Zoom Slider
         Slider zoomSlider = new Slider();
@@ -358,7 +369,7 @@ public class GameGui extends Application {
         settingsGrid.setPadding(new Insets(10));
         scrollPaneRight.setContent(settingsGrid);
 
-        // ------------------
+        // ------------------ GUI Layout; Stage Settings ------------------
 
 
         // Disable the automatic resizing of the right ScrollPane, when the window would be resized
@@ -386,34 +397,7 @@ public class GameGui extends Application {
         // ------------------ Event Handlers ------------------
 
         // Change the size of the play field to the values of the text fields
-        Pattern integerPat = Pattern.compile("^\\d+$");
-        setDimensionBt.setOnAction(e -> {
-            String xDim = xDimTf.getText();
-            String yDim = yDimTf.getText();
-
-            boolean validXDim = integerPat.matcher(xDim).matches();
-            boolean validYDim = integerPat.matcher(yDim).matches();
-
-            // If X dimension is invalid -> Display Error Message
-            if (!validXDim) {
-                errorDialog(stage, "Input Error", "The X dimension (\"" + xDim + "\") is not valid!", "Only integers are allowed.");
-                xDimTf.setText(Integer.toString(playField.getDimensionX()));
-            }
-
-            // If Y dimension is invalid -> Display Error Message
-            if (!validYDim) {
-                errorDialog(stage, "Input Error", "The Y dimension (\"" + yDim + "\") is not valid!", "Only integers are allowed.");
-                yDimTf.setText(Integer.toString(playField.getDimensionY()));
-            }
-
-            // If both inputs are valid -> set the dimensions of the playground and the size of the canvas
-            if (validXDim && validYDim) {
-                pauseGame();
-                playField.setSize(Integer.parseInt(xDim), Integer.parseInt(yDim));
-                drawPlayField(playField);
-                curLivingNumLabel.setText(Integer.toString(playField.getLivingCells()));
-            }
-        });
+        setDimensionBt.setOnAction(e -> GuiLogic.setDimensions(this, xDimTf, yDimTf, curLivingNumLabel));
 
 
         // Runnable, which is periodically called from the ScheduledExecutorService, to get the play field to the next generation
@@ -421,194 +405,66 @@ public class GameGui extends Application {
             if (playField.stepForward()) {
                 // Updating GUI elements can only be done in the Application thread
                 Platform.runLater(() -> {
-                    drawPlayField(playField);
+                    GuiLogic.drawPlayField(this);
                     curGenNumLabel.setText(Integer.toString(playField.getGeneration()));
                     curLivingNumLabel.setText(Integer.toString(playField.getLivingCells()));
                 });
             } else {
-                pauseGame();
+                GuiLogic.pauseGame(executor);
             }
         };
 
         // Start the game -> initialise ScheduledExecutorService
-        playBt.setOnAction(e -> {
-            System.out.println("Start Game");
-            executor = Executors.newScheduledThreadPool(1);
-            executor.scheduleAtFixedRate(runGame, 0, (long) (playField.getGameSpeed() * 1000), TimeUnit.MILLISECONDS);
-        });
+        playBt.setOnAction(e -> GuiLogic.playGame(this, runGame));
 
         // Pause the game -> Stop the ScheduledExecutorService
-        pauseBt.setOnAction(e -> pauseGame());
+        pauseBt.setOnAction(e -> GuiLogic.pauseGame(executor));
 
 
         // Get the play field to the last generation
-        stepBackBt.setOnAction(e -> {
-            if (playField.stepTo(playField.getGeneration() - 1)) {
-                drawPlayField(playField);
-                curGenNumLabel.setText(Integer.toString(playField.getGeneration()));
-                curLivingNumLabel.setText(Integer.toString(playField.getLivingCells()));
-            }
-        });
-
+        stepBackBt.setOnAction(e -> GuiLogic.stepBack(this, curGenNumLabel, curLivingNumLabel));
 
         // Get the play field to the next generation
-        stepForwardBt.setOnAction(e -> {
-            if (playField.stepForward()) {
-                drawPlayField(playField);
-                curGenNumLabel.setText(Integer.toString(playField.getGeneration()));
-                curLivingNumLabel.setText(Integer.toString(playField.getLivingCells()));
-            }
-        });
+        stepForwardBt.setOnAction(e -> GuiLogic.stepForward(this, curGenNumLabel, curLivingNumLabel));
 
 
         // Go the a specific Generation
-        goToBt.setOnAction(e -> {
-            String gen = goToTf.getText();
-            boolean validGen = integerPat.matcher(gen).matches();
-
-            if (validGen) {
-                // If generation is valid -> go to the generation x
-                if (playField.stepTo(Integer.parseInt(gen))) {
-                    drawPlayField(playField);
-                    curGenNumLabel.setText(Integer.toString(playField.getGeneration()));
-                    curLivingNumLabel.setText(Integer.toString(playField.getLivingCells()));
-                    goToTf.setText(Integer.toString(playField.getGeneration()));
-                }
-            } else {
-                // If generation is invalid -> Display Error Message
-                errorDialog(stage, "Input Error", "The Generation (\"" + gen + "\") is not valid!", "Only integers are allowed.");
-                goToTf.setText("");
-            }
-        });
+        goToBt.setOnAction(e -> GuiLogic.goToGen(this, curGenNumLabel, curLivingNumLabel, goToTf));
 
 
         // Reset the complete game and display the changes
-        resetBt.setOnAction(e -> {
-            pauseGame();
-            playField.setSize(playField.getDimensionX(), playField.getDimensionY());
-            playField.resetGeneration();
-
-            drawPlayField(playField);
-            curGenNumLabel.setText(Integer.toString(playField.getGeneration()));
-            curLivingNumLabel.setText(Integer.toString(playField.getLivingCells()));
-        });
-
+        resetBt.setOnAction(e -> GuiLogic.reset(this, curGenNumLabel, curLivingNumLabel));
 
         // Reset the play field to the state of generation zero
-        resetToStartBt.setOnAction(e -> {
-            pauseGame();
-            if (playField.stepTo(0)) {
-                drawPlayField(playField);
-                curGenNumLabel.setText(Integer.toString(playField.getGeneration()));
-                curLivingNumLabel.setText(Integer.toString(playField.getLivingCells()));
-            }
-        });
+        resetToStartBt.setOnAction(e -> GuiLogic.resetToStart(this, curGenNumLabel, curLivingNumLabel));
 
 
         // Change the game speed of the play field to the value of the text field
-        Pattern gameSpeedPat = Pattern.compile("^([1-9]\\d*(\\.\\d*)?)|(\\d*\\.\\d{0,2}[1-9]0*)$");
-        setSpeedBt.setOnAction(e -> {
-            String gameSpeed = speedTf.getText();
-
-            // If Game Speed is valid -> pause the game and set the game speed
-            // Otherwise -> Display Error Message
-            if (gameSpeedPat.matcher(gameSpeed).matches()) {
-                pauseGame();
-                playField.setGameSpeed(Float.parseFloat(gameSpeed));
-            } else {
-                errorDialog(stage, "Input Error", "The Game Speed (\"" + gameSpeed + "\") is not valid!", "Only integers or floating point values are allowed. " +
-                        "There is a maximum of 3 decimal points. The values are interpreted in seconds. Minimum value = 0.001");
-                speedTf.setText(Float.toString(playField.getGameSpeed()));
-            }
-        });
-
+        setSpeedBt.setOnAction(e -> GuiLogic.setSpeed(this, speedTf));
 
         // Change the game rules of the play field to the values of the text fields
-        Pattern gameRulePat = Pattern.compile("^([0-8],)*[0-8]$");
-        gameRulesBt.setOnAction(e -> {
-            String reanimateRule = reanimateRuleTf.getText();
-            String keepLifeRule = keepLifeRuleTf.getText();
-
-            boolean validReanimateRule = gameRulePat.matcher(reanimateRule).matches();
-            boolean validKeepLifeRule = gameRulePat.matcher(keepLifeRule).matches();
-
-            String errorExplanation = "The rule is valid if it contains one or more integers (from 0 to 8), separated with a comma (\",\").";
-
-            // If Reanimate Rule is invalid -> Display Error Message
-            if (!validReanimateRule) {
-                errorDialog(stage, "Input Error", "The Reanimate Rule (\"" + reanimateRule + "\") is not valid!", errorExplanation);
-                reanimateRuleTf.setText(playField.getReanimateRule());
-            }
-
-            // If Keep Alive Rule is invalid -> Display Error Message
-            if (!validKeepLifeRule) {
-                errorDialog(stage, "Input Error", "The Keep Alive Rule (\"" + keepLifeRule + "\") is not valid!", errorExplanation);
-                keepLifeRuleTf.setText(playField.getKeepLifeRule());
-            }
-
-            // If both inputs are valid -> set the game rules to the input values
-            if (validReanimateRule & validKeepLifeRule) {
-                playField.setReanimateRule(reanimateRule);
-                playField.setKeepLifeRule(keepLifeRule);
-            }
-        });
+        gameRulesBt.setOnAction(e -> GuiLogic.setGameRules(this, reanimateRuleTf, keepLifeRuleTf));
 
 
         // Load the selected preset (file) from the dropdown menu of the presetBox
-        presetBox.setOnAction(e -> {
-            if (!presetBox.getValue().equals("")) {
-                String selectedItem = presetBox.getSelectionModel().getSelectedItem();
-                presetBox.getSelectionModel().select(0);
-
-                int[][] newPlayField = presetManager.loadPreset(selectedItem);
-                updatePlayField(newPlayField, playField, xDimTf, yDimTf, curGenNumLabel, curLivingNumLabel);
-            }
-        });
+        presetBox.setOnAction(e -> GuiLogic.presetBox(this, xDimTf, yDimTf, curGenNumLabel, curLivingNumLabel, presetBox));
 
         // Load a preset into the play field
-        loadPresetBt.setOnAction(e -> {
-            int[][] newPlayField = presetManager.loadPreset();
-            updatePlayField(newPlayField, playField, xDimTf, yDimTf, curGenNumLabel, curLivingNumLabel);
-        });
+        loadPresetBt.setOnAction(e -> GuiLogic.loadPreset(this, xDimTf, yDimTf, curGenNumLabel, curLivingNumLabel));
 
         // Save the current play field to a CSV file
-        savePresetBt.setOnAction(e -> {
-            if (presetManager.savePreset(playField)) {
-                presetBox.setItems(presetManager.getObservableList());
-            }
-        });
+        savePresetBt.setOnAction(e -> GuiLogic.savePreset(this, presetBox));
 
 
         analysisBt.setOnAction(e -> System.out.println("Show Analysis"));
 
 
         // Zoom Slider for zooming into the game Canvas
-        zoomSlider.valueProperty().addListener(e -> {
-            // Change the variable size per cell according to the value of the zoom slider
-            sizePerCell = (int) (DEFAULT_SIZE_PER_CELL * zoomSlider.getValue());
-            drawPlayField(playField);
-        });
+        zoomSlider.valueProperty().addListener(e -> GuiLogic.changeZoom(this, zoomSlider));
 
 
         // Change the value of a cell to living or dead
-        gameCanvas.setOnMouseClicked(e -> {
-            // Get the expected position in the array from the mouse position
-            int posX = (int) ((e.getSceneX() - gameCanvas.getLayoutX()) / sizePerCell);
-            int posY = (int) ((e.getSceneY() - gameCanvas.getLayoutY()) / sizePerCell);
-
-            // If the positions are within the size of the play field
-            if (posX < playField.getDimensionX() && posY < playField.getDimensionY()) {
-                // If it is a living cell -> dead
-                if (playField.getCell(posX, posY) == 1) {
-                    playField.setCell(posX, posY, 0);
-                } else {
-                    playField.setCell(posX, posY, 1);
-                }
-            }
-
-            drawPlayField(playField);
-            curLivingNumLabel.setText(Integer.toString(playField.getLivingCells()));
-        });
+        gameCanvas.setOnMouseClicked(e -> GuiLogic.changeCellState(this, e, curLivingNumLabel));
 
 
         // Change the value of stopIfMinimized to the value of the according CheckBox (stopIfMinimizedCB)
@@ -616,105 +472,6 @@ public class GameGui extends Application {
 
         // Detect if the main window has been minimized into the taskbar
         // If it has and the stopIfMinimized is true -> pause the game
-        stage.iconifiedProperty().addListener((ov, t, t1) -> {
-            if (t1 && stopIfMinimized) {
-                pauseGame();
-            }
-        });
-    }
-
-
-    /**
-     * Draw the current Play Field to the Canvas of the Gui.
-     *
-     * @param playField PlayField Object containing the play field array
-     */
-    void drawPlayField(PlayField playField) {
-        gameCanvas.setWidth(playField.getDimensionX() * sizePerCell);
-        gameCanvas.setHeight(playField.getDimensionY() * sizePerCell);
-
-        double canvasW = gameCanvas.getWidth();
-        double canvasH = gameCanvas.getHeight();
-
-        gc.clearRect(0, 0, canvasW, canvasH);
-
-        // Draw Cells
-        for (int y = 0; y < playField.getDimensionY(); y++) {
-            for (int x = 0; x < playField.getDimensionX(); x++) {
-                if (playField.getCell(x, y) == 1) {
-                    gc.setFill(Color.web("98E35B"));
-                    gc.fillRect(x * sizePerCell, y * sizePerCell, sizePerCell, sizePerCell);
-                }
-            }
-        }
-
-        // Draw Grid
-        for (int x = 0; x <= playField.getDimensionX(); x++) {
-            gc.strokeLine(x * sizePerCell, 0, x * sizePerCell, canvasH);
-        }
-
-        for (int y = 0; y <= playField.getDimensionY(); y++) {
-            gc.strokeLine(0, y * sizePerCell, canvasW, y * sizePerCell);
-        }
-    }
-
-    /**
-     * Display variable Error Dialog.
-     *
-     * @param stage       top level JavaFX container for the main GUI
-     * @param title       Title of the Error Dialog
-     * @param headerText  Main Error Message
-     * @param contentText Helpful Error Hint
-     */
-    static void errorDialog(Stage stage, String title, String headerText, String contentText) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.initOwner(stage);
-        alert.setTitle(title);
-        alert.setHeaderText(headerText);
-        alert.setContentText(contentText);
-        alert.showAndWait();
-    }
-
-    /**
-     * Pause the game -> stop the ScheduledExecutorService
-     */
-    void pauseGame() {
-        if (executor != null) {
-            executor.shutdown();
-        }
-    }
-
-    /**
-     * Update the play field to a new array
-     *
-     * @param newPlayField int[][] array which contains the new play field
-     */
-    void updatePlayField(int[][] newPlayField, PlayField playField, TextField xDimTf, TextField yDimTf, Label curGenNumLabel, Label curLivingNumLabel) {
-        if (newPlayField != null) {
-            pauseGame();
-            playField.setPlayField(newPlayField);
-            playField.setOriginalPlayField(newPlayField);
-            playField.resetGeneration();
-            drawPlayField(playField);
-
-            xDimTf.setText(Integer.toString(playField.getDimensionX()));
-            yDimTf.setText(Integer.toString(playField.getDimensionY()));
-            curGenNumLabel.setText(Integer.toString(playField.getGeneration()));
-            curLivingNumLabel.setText(Integer.toString(playField.getLivingCells()));
-        }
-    }
-
-    /**
-     * Convert a String array to an int array
-     *
-     * @param input String array
-     * @return int array
-     */
-    static int[] stringArToIntAr(String[] input) {
-        int[] result = new int[input.length];
-        for (int y = 0; y < input.length; y++) {
-            result[y] = Integer.parseInt(input[y]);
-        }
-        return result;
+        stage.iconifiedProperty().addListener((ov, t, t1) -> GuiLogic.stopGameIfMinimized(t1, stopIfMinimized, executor));
     }
 }

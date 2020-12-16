@@ -181,7 +181,7 @@ public class PlayField {
      * @param cellsNeeded String of the needed cells, separated via ","
      */
     void setReanimateRule(String cellsNeeded) {
-        setReanimateRule(GameGui.stringArToIntAr(cellsNeeded.split(",")));
+        setReanimateRule(GuiLogic.stringArToIntAr(cellsNeeded.split(",")));
     }
 
     /**
@@ -211,7 +211,7 @@ public class PlayField {
      * @param cellsNeeded String of the needed cells, separated via ","
      */
     void setKeepLifeRule(String cellsNeeded) {
-        setKeepLifeRule(GameGui.stringArToIntAr(cellsNeeded.split(",")));
+        setKeepLifeRule(GuiLogic.stringArToIntAr(cellsNeeded.split(",")));
     }
 
     /**

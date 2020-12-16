@@ -46,7 +46,7 @@ public class PresetManager {
      *
      * @param PRESET_PATH path to the folder, which contains the presets
      */
-    public PresetManager(Stage stage, String PRESET_PATH) {
+    PresetManager(Stage stage, String PRESET_PATH) {
         this.STAGE = stage;
         this.PRESET_PATH = PRESET_PATH;
         loadPresetsToMap();
@@ -97,12 +97,12 @@ public class PresetManager {
         try {
             int[][] newPlayField = loadFromCSV(Files.readAllLines(srcPath));
             if (newPlayField == null) {
-                GameGui.errorDialog(STAGE, "Loading File", "Could not load the file to the play field!", "Please check the file or try another one.");
+                GuiLogic.errorDialog(STAGE, "Loading File", "Could not load the file to the play field!", "Please check the file or try another one.");
             } else {
                 return newPlayField;
             }
         } catch (IOException ioException) {
-            GameGui.errorDialog(STAGE, "IOException", "Could not read the file!", String.valueOf(ioException.getCause()));
+            GuiLogic.errorDialog(STAGE, "IOException", "Could not read the file!", String.valueOf(ioException.getCause()));
         }
         return null;
     }
@@ -145,7 +145,7 @@ public class PresetManager {
             loadPresetsToMap();
             return true;
         } catch (IOException ioException) {
-            GameGui.errorDialog(STAGE, "IOException", "Could not write to file!", String.valueOf(ioException.getCause()));
+            GuiLogic.errorDialog(STAGE, "IOException", "Could not write to file!", String.valueOf(ioException.getCause()));
         }
         return false;
     }
@@ -212,7 +212,7 @@ public class PresetManager {
                 return null;
             }
 
-            int[] oneLineIntAr = GameGui.stringArToIntAr(oneLineStAr);
+            int[] oneLineIntAr = GuiLogic.stringArToIntAr(oneLineStAr);
             newPlayField[y] = oneLineIntAr;
         }
 
