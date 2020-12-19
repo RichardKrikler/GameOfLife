@@ -48,8 +48,24 @@ public class PlayField {
      * @param dimensionX x dimension of the play field
      * @param dimensionY y dimension of the play field
      */
-    PlayField(int dimensionX, int dimensionY) {
+    public PlayField(int dimensionX, int dimensionY) {
         setSize(dimensionX, dimensionY);
+    }
+
+    /**
+     * Extended PlayField Constructor
+     *
+     * @param dimensionX    x dimension of the play field
+     * @param dimensionY    y dimension of the play field
+     * @param gameSpeed     floating point value, which contains the game speed
+     * @param reanimateRule int array of the needed cells for the reanimate rule
+     * @param keepLifeRule  int array of the needed cells for the keep life rule
+     */
+    public PlayField(int dimensionX, int dimensionY, float gameSpeed, int[] reanimateRule, int[] keepLifeRule) {
+        setSize(dimensionX, dimensionY);
+        this.setGameSpeed(gameSpeed);
+        this.setReanimateRule(reanimateRule);
+        this.setKeepLifeRule(keepLifeRule);
     }
 
 
@@ -58,16 +74,26 @@ public class PlayField {
      *
      * @param playField int[][] array which contains the play field
      */
-    void setPlayField(int[][] playField) {
+    public void setPlayField(int[][] playField) {
         this.playField = playField;
     }
+
+    /**
+     * Get the play field array
+     *
+     * @return int[][] array which contains the play field
+     */
+    public int[][] getPlayField() {
+        return this.playField;
+    }
+
 
     /**
      * Override the original playField array
      *
      * @param originalPlayField int[][] array which contains the play field
      */
-    void setOriginalPlayField(int[][] originalPlayField) {
+    public void setOriginalPlayField(int[][] originalPlayField) {
         this.originalPlayField = originalPlayField;
     }
 
@@ -78,7 +104,7 @@ public class PlayField {
      * @param dimensionX x dimension of the play field
      * @param dimensionY y dimension of the play field
      */
-    void setSize(int dimensionX, int dimensionY) {
+    public void setSize(int dimensionX, int dimensionY) {
         this.playField = new int[dimensionY][dimensionX];
     }
 
@@ -88,7 +114,7 @@ public class PlayField {
      *
      * @return x dimension
      */
-    int getDimensionX() {
+    public int getDimensionX() {
         return playField.length > 0 ? playField[0].length : 0;
     }
 
@@ -97,7 +123,7 @@ public class PlayField {
      *
      * @return y dimension
      */
-    int getDimensionY() {
+    public int getDimensionY() {
         return playField.length;
     }
 
@@ -109,7 +135,7 @@ public class PlayField {
      * @param posY y position of the cell
      * @return cell value
      */
-    int getCell(int posX, int posY) {
+    public int getCell(int posX, int posY) {
         return this.playField[posY][posX];
     }
 
@@ -119,7 +145,7 @@ public class PlayField {
      * @param posX x position of the cell
      * @param posY y position of the cell
      */
-    void setCell(int posX, int posY, int value) {
+    public void setCell(int posX, int posY, int value) {
         this.playField[posY][posX] = value;
         if (getGeneration() == 0) {
             this.originalPlayField = this.playField;
@@ -132,14 +158,14 @@ public class PlayField {
      *
      * @return integer of the generation
      */
-    int getGeneration() {
+    public int getGeneration() {
         return this.generationCount;
     }
 
     /**
      * Reset the generation count to zero
      */
-    void resetGeneration() {
+    public void resetGeneration() {
         this.generationCount = 0;
     }
 
@@ -149,7 +175,7 @@ public class PlayField {
      *
      * @param gameSpeed floating point value, which contains the game speed
      */
-    void setGameSpeed(float gameSpeed) {
+    public void setGameSpeed(float gameSpeed) {
         this.gameSpeed = gameSpeed;
     }
 
@@ -158,7 +184,7 @@ public class PlayField {
      *
      * @return floating point value of the game speed
      */
-    float getGameSpeed() {
+    public float getGameSpeed() {
         return this.gameSpeed;
     }
 
@@ -168,7 +194,7 @@ public class PlayField {
      *
      * @param cellsNeeded cells needed to reanimate a dead cell
      */
-    void setReanimateRule(int... cellsNeeded) {
+    public void setReanimateRule(int... cellsNeeded) {
         this.reanimateRule.clear();
         for (int neededCell : cellsNeeded) {
             this.reanimateRule.add(neededCell);
@@ -180,7 +206,7 @@ public class PlayField {
      *
      * @param cellsNeeded String of the needed cells, separated via ","
      */
-    void setReanimateRule(String cellsNeeded) {
+    public void setReanimateRule(String cellsNeeded) {
         setReanimateRule(GuiLogic.stringArToIntAr(cellsNeeded.split(",")));
     }
 
@@ -189,7 +215,7 @@ public class PlayField {
      *
      * @return String of the Reanimation Rule
      */
-    String getReanimateRule() {
+    public String getReanimateRule() {
         return this.reanimateRule.toString().replaceAll("[\\[\\]\\s]", "");
     }
 
@@ -198,7 +224,7 @@ public class PlayField {
      *
      * @param cellsNeeded cells needed to keep a cell alive
      */
-    void setKeepLifeRule(int... cellsNeeded) {
+    public void setKeepLifeRule(int... cellsNeeded) {
         this.keepLifeRule.clear();
         for (int neededCell : cellsNeeded) {
             this.keepLifeRule.add(neededCell);
@@ -210,7 +236,7 @@ public class PlayField {
      *
      * @param cellsNeeded String of the needed cells, separated via ","
      */
-    void setKeepLifeRule(String cellsNeeded) {
+    public void setKeepLifeRule(String cellsNeeded) {
         setKeepLifeRule(GuiLogic.stringArToIntAr(cellsNeeded.split(",")));
     }
 
@@ -219,7 +245,7 @@ public class PlayField {
      *
      * @return String of the Keep Alive Rule
      */
-    String getKeepLifeRule() {
+    public String getKeepLifeRule() {
         return this.keepLifeRule.toString().replaceAll("[\\[\\]\\s]", "");
     }
 
@@ -229,7 +255,7 @@ public class PlayField {
      *
      * @return integer value with the counted cells
      */
-    int getLivingCells() {
+    public int getLivingCells() {
         int[] livingCells = {0};
 
         for (int y = 0; y < getDimensionY(); y++) {
@@ -248,7 +274,7 @@ public class PlayField {
      *
      * @return true if it was possible to go to the next generation
      */
-    boolean stepForward() {
+    public boolean stepForward() {
         int[][] newPlayField = new int[getDimensionY()][getDimensionX()];
 
         for (int y = 0; y < getDimensionY(); y++) {
@@ -294,7 +320,7 @@ public class PlayField {
      *
      * @return true if it was possible to go to the last generation
      */
-    boolean stepTo(int generation) {
+    public boolean stepTo(int generation) {
         if (generation < 0 || getGeneration() == generation) {
             return false;
         }

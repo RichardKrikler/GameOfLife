@@ -342,7 +342,7 @@ public class GuiLogic {
      * @param presetBox         combo box for the presets in the preset folder
      */
     static void presetBox(Gui gui, TextField xDimTf, TextField yDimTf, Label curGenNumLabel, Label curLivingNumLabel, ComboBox<String> presetBox) {
-        if (!presetBox.getValue().equals("")) {
+        if (presetBox.getValue() != null && !presetBox.getValue().equals("")) {
             String selectedItem = presetBox.getSelectionModel().getSelectedItem();
             presetBox.getSelectionModel().select(0);
 

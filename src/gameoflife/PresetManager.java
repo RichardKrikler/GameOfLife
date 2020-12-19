@@ -29,7 +29,7 @@ public class PresetManager {
      * String = name of the preset
      * Path = location of the preset
      */
-    private final HashMap<String, Path> presets = new HashMap<>();
+    private final HashMap<String, Path> PRESETS = new HashMap<>();
 
     /**
      * FileChooser for the file selection dialogs
@@ -46,7 +46,7 @@ public class PresetManager {
      *
      * @param PRESET_PATH path to the folder, which contains the presets
      */
-    PresetManager(Stage stage, String PRESET_PATH) {
+    public PresetManager(Stage stage, String PRESET_PATH) {
         this.STAGE = stage;
         this.PRESET_PATH = PRESET_PATH;
         loadPresetsToMap();
@@ -63,9 +63,9 @@ public class PresetManager {
     /**
      * Load the files from the presets folder into the presets Map
      */
-    void loadPresetsToMap() {
-        presets.clear();
-        presets.put("", null);
+    public void loadPresetsToMap() {
+        PRESETS.clear();
+        PRESETS.put("", null);
         File[] presetFiles = new File(PRESET_PATH).listFiles();
 
         // If there are any files in the preset folder ->
@@ -73,7 +73,7 @@ public class PresetManager {
         if (presetFiles != null) {
             for (File presetFile : presetFiles) {
                 if (presetFile.isFile()) {
-                    presets.put(presetFile.getName().replaceAll(".csv", ""), presetFile.toPath());
+                    PRESETS.put(presetFile.getName().replaceAll(".csv$", ""), presetFile.toPath());
                 }
             }
         }
@@ -83,8 +83,8 @@ public class PresetManager {
     /**
      * Get an observable list of the preset filenames
      */
-    ObservableList<String> getObservableList() {
-        return FXCollections.observableArrayList(presets.keySet());
+    public ObservableList<String> getObservableList() {
+        return FXCollections.observableArrayList(PRESETS.keySet());
     }
 
 
@@ -93,7 +93,7 @@ public class PresetManager {
      *
      * @return int[][] array which contains the play field of the preset
      */
-    int[][] loadPreset(Path srcPath) {
+    public int[][] loadPreset(Path srcPath) {
         try {
             int[][] newPlayField = loadFromCSV(Files.readAllLines(srcPath));
             if (newPlayField == null) {
@@ -102,7 +102,7 @@ public class PresetManager {
                 return newPlayField;
             }
         } catch (IOException ioException) {
-            GuiLogic.errorDialog(STAGE, "IOException", "Could not read the file!", String.valueOf(ioException.getCause()));
+            GuiLogic.errorDialog(STAGE, "IOException", "Could not read the file!", "Error Message: " + String.valueOf(ioException.getCause()));
         }
         return null;
     }
@@ -112,7 +112,7 @@ public class PresetManager {
      *
      * @return int[][] array which contains the play field of the preset
      */
-    int[][] loadPreset() {
+    public int[][] loadPreset() {
         // Show the FileChooser open Dialog
         File srcFile = FILE_CHOOSER.showOpenDialog(STAGE);
 
@@ -131,15 +131,15 @@ public class PresetManager {
      * @param presetName name of the preset
      * @return int[][] array which contains the play field of the preset
      */
-    int[][] loadPreset(String presetName) {
-        return loadPreset(presets.get(presetName));
+    public int[][] loadPreset(String presetName) {
+        return loadPreset(PRESETS.get(presetName));
     }
 
 
     /**
      * Save the preset to the selected path
      */
-    boolean savePreset(Path destPath, PlayField playField) {
+    public boolean savePreset(Path destPath, PlayField playField) {
         try {
             Files.writeString(destPath, convertToCSV(playField));
             loadPresetsToMap();
@@ -150,7 +150,7 @@ public class PresetManager {
         return false;
     }
 
-    boolean savePreset(PlayField playField) {
+    public boolean savePreset(PlayField playField) {
         // Show the FileChooser save Dialog
         File destFile = FILE_CHOOSER.showSaveDialog(STAGE);
 
@@ -168,7 +168,7 @@ public class PresetManager {
      *
      * @return String containing the play field
      */
-    String convertToCSV(PlayField playField) {
+    public String convertToCSV(PlayField playField) {
         StringBuilder csv = new StringBuilder();
 
         for (int y = 0; y < playField.getDimensionY(); y++) {
@@ -192,7 +192,7 @@ public class PresetManager {
      * @param playField List of the Lines stored in the file
      * @return true if the conversion was successful
      */
-    int[][] loadFromCSV(List<String> playField) {
+    public int[][] loadFromCSV(List<String> playField) {
         if (playField.size() < 1) {
             return null;
         }
@@ -218,5 +218,4 @@ public class PresetManager {
 
         return newPlayField;
     }
-
 }
