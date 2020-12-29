@@ -19,24 +19,33 @@ class PlayFieldTest {
     /**
      * Store the play field inside the PlayField Object
      * <p>
-     * PlayField width:
+     * PlayField with:
      * size of X: 15; Y: 16
      * game speed of 1 second per generation
      * standard rules for
      * - reanimate rule: 3
      * - keep life rule: 2, 3
      */
-    PlayField playField = new PlayField(15, 16, 1, new int[]{3}, new int[]{2, 3});
+    private final PlayField playField = new PlayField(15, 16, 1, new int[]{3}, new int[]{2, 3});
 
     /**
      * Store the preset manager (logic for the use of presets) inside the PresetManager Object
      * <p>
-     * PresetManager width:
+     * PresetManager with:
      * stage value of null
      * standard preset path
      */
-    PresetManager presetManager = new PresetManager(null, "resources/PlayFieldPresets");
+    private final PresetManager presetManager = new PresetManager(null, "resources/PlayFieldPresets");
 
+
+    @Test
+    void testCreatePlayField() {
+        assertEquals(15, playField.getDimensionX());
+        assertEquals(16, playField.getDimensionY());
+        assertEquals(1, playField.getGameSpeed());
+        assertEquals("3", playField.getReanimateRule());
+        assertEquals("2,3", playField.getKeepLifeRule());
+    }
 
     @Test
     void setSize() {

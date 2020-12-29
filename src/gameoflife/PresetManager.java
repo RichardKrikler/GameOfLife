@@ -79,6 +79,17 @@ public class PresetManager {
         }
     }
 
+    /**
+     * Get the Map with the presets of the preset folder
+     * String = name of the preset
+     * Path = location of the preset
+     *
+     * @return HashMap with the presets
+     */
+    public HashMap<String, Path> getPRESETS() {
+        return this.PRESETS;
+    }
+
 
     /**
      * Get an observable list of the preset filenames
@@ -102,7 +113,7 @@ public class PresetManager {
                 return newPlayField;
             }
         } catch (IOException ioException) {
-            GuiLogic.errorDialog(STAGE, "IOException", "Could not read the file!", "Error Message: " + String.valueOf(ioException.getCause()));
+            GuiLogic.errorDialog(STAGE, "IOException", "Could not read the file!", "Error Message: " + ioException.getCause());
         }
         return null;
     }
