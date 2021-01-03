@@ -1,6 +1,7 @@
 package gameoflife;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 
 /**
@@ -20,6 +21,11 @@ public class PlayField {
      * 2D int Array
      */
     private int[][] originalPlayField;
+
+    /**
+     * Stores all previous play field arrays
+     */
+    private final HashMap<Integer, int[][]> playFields = new HashMap<>();
 
     /**
      * Stores the current number of generation
@@ -317,6 +323,7 @@ public class PlayField {
         if (Arrays.deepEquals(playField, newPlayField)) {
             return false;
         } else {
+            playFields.put(getGeneration(), playField);
             playField = newPlayField;
             generationCount++;
             return true;
@@ -333,19 +340,19 @@ public class PlayField {
             return false;
         }
 
-        int startAt = 0;
-
         if (getGeneration() > generation) {
-            playField = originalPlayField;
-            resetGeneration();
+            playField = playFields.get(generation);
+            for (int i = generation + 1; i < playFields.size(); i++) {
+                playFields.remove(i);
+            }
+
+            generationCount = generation;
         } else {
-            startAt = getGeneration();
-        }
-
-
-        for (int i = startAt; i < generation; i++) {
-            stepForward();
-            analysis.addCellCount(getGeneration(), getLivingCells());
+            int startAt = getGeneration();
+            for (int i = startAt; i < generation; i++) {
+                stepForward();
+                analysis.addCellCount(getGeneration(), getLivingCells());
+            }
         }
 
         return true;

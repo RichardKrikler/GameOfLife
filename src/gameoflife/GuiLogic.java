@@ -397,8 +397,8 @@ public class GuiLogic {
      */
     static void changeCellState(Gui gui, MouseEvent e, Label curLivingNumLabel) {
         // Get the expected position in the array from the mouse position
-        int posX = (int) ((e.getSceneX() - gui.gameCanvas.getLayoutX()) / gui.sizePerCell);
-        int posY = (int) ((e.getSceneY() - gui.gameCanvas.getLayoutY()) / gui.sizePerCell);
+        int posX = (int) (e.getX() / gui.sizePerCell);
+        int posY = (int) (e.getY() / gui.sizePerCell);
 
         // If the positions are within the size of the play field
         if (posX < gui.playField.getDimensionX() && posY < gui.playField.getDimensionY()) {
