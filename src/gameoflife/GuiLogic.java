@@ -107,7 +107,6 @@ public class GuiLogic {
         if (newPlayField != null) {
             pauseGame(gui.executor);
             gui.playField.setPlayField(newPlayField);
-            gui.playField.setOriginalPlayField(newPlayField);
             gui.playField.resetGeneration();
             drawPlayField(gui);
 
@@ -374,6 +373,18 @@ public class GuiLogic {
         if (gui.presetManager.savePreset(gui.playField)) {
             presetBox.setItems(gui.presetManager.getObservableList());
         }
+    }
+
+    /**
+     * Place living cells randomly on the play field
+     *
+     * @param gui               object of the main class
+     * @param curLivingNumLabel label for displaying the current amount of living cells
+     */
+    static void placeRandomly(Gui gui, Label curLivingNumLabel) {
+        gui.playField.placeRandomly();
+        drawPlayField(gui);
+        curLivingNumLabel.setText(Integer.toString(gui.playField.getLivingCells()));
     }
 
     /**

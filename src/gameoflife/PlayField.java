@@ -17,12 +17,6 @@ public class PlayField {
     private int[][] playField;
 
     /**
-     * Stores the play field at generation zero
-     * 2D int Array
-     */
-    private int[][] originalPlayField;
-
-    /**
      * Stores all previous play field arrays
      */
     private final HashMap<Integer, int[][]> playFields = new HashMap<>();
@@ -100,16 +94,6 @@ public class PlayField {
 
 
     /**
-     * Override the original playField array
-     *
-     * @param originalPlayField int[][] array which contains the play field
-     */
-    public void setOriginalPlayField(int[][] originalPlayField) {
-        this.originalPlayField = originalPlayField;
-    }
-
-
-    /**
      * Override the playField array with a new int array, with new dimensions.
      *
      * @param dimensionX x dimension of the play field
@@ -158,9 +142,6 @@ public class PlayField {
      */
     public void setCell(int posX, int posY, int value) {
         playField[posY][posX] = value;
-        if (getGeneration() == 0) {
-            originalPlayField = playField;
-        }
     }
 
 
@@ -282,6 +263,32 @@ public class PlayField {
 
         return livingCells;
     }
+
+
+    /**
+     * Place living cells randomly on the play field
+     */
+    public void placeRandomly() {
+        setSize(getDimensionX(), getDimensionY());
+
+        int playFieldArea = getDimensionX() * getDimensionY();
+        double min = playFieldArea * .3;
+        double max = playFieldArea * .5;
+        // Random amount of cells being placed (range between 30% to 50% of the play field)
+        int cellAmount = (int) ((Math.random() * (max - min)) + min);
+
+        int cellCounter = 0;
+        while (cellCounter != cellAmount) {
+            int posX = (int) (Math.random() * getDimensionX());
+            int posY = (int) (Math.random() * getDimensionY());
+
+            if (getCell(posX, posY) == 0) {
+                setCell(posX, posY, 1);
+                cellCounter++;
+            }
+        }
+    }
+
 
     /**
      * Get the play field to the next generation

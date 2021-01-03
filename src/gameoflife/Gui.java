@@ -354,28 +354,33 @@ public class Gui extends Application {
         savePresetBt.setTooltip(new Tooltip("Save a Preset"));
         settingsGrid.add(savePresetBt, 1, 16);
 
+        Button randomPlacementBt = new Button("Random Placement");
+        randomPlacementBt.setTooltip(new Tooltip("Place living cells randomly"));
+        settingsGrid.add(randomPlacementBt, 0, 17);
+        GridPane.setColumnSpan(randomPlacementBt, 3);
+
 
         // Game Analysis
         Label analysisLabel = new Label("Analysis:");
-        settingsGrid.add(analysisLabel, 0, 17);
+        settingsGrid.add(analysisLabel, 0, 18);
         GridPane.setColumnSpan(analysisLabel, 3);
 
         Button analysisBt = new Button("Show Analysis");
         analysisBt.setTooltip(new Tooltip("Show Game Analysis"));
         GridPane.setColumnSpan(analysisBt, 2);
-        settingsGrid.add(analysisBt, 0, 18);
+        settingsGrid.add(analysisBt, 0, 19);
 
 
         // Stop game if the main window is minimized into the taskbar
         Label stopIfMinimizedLabel = new Label("Stop game if minimized:");
         stopIfMinimizedLabel.setTooltip(new Tooltip("Stop the game if the window is minimized into the taskbar."));
-        settingsGrid.add(stopIfMinimizedLabel, 0, 19);
+        settingsGrid.add(stopIfMinimizedLabel, 0, 20);
         GridPane.setColumnSpan(stopIfMinimizedLabel, 3);
 
         CheckBox stopIfMinimizedCB = new CheckBox();
         stopIfMinimizedCB.setSelected(stopIfMinimized);
         GridPane.setHalignment(stopIfMinimizedCB, HPos.CENTER);
-        settingsGrid.add(stopIfMinimizedCB, 2, 19);
+        settingsGrid.add(stopIfMinimizedCB, 2, 20);
 
 
         settingsGrid.setHgap(10);
@@ -468,6 +473,9 @@ public class Gui extends Application {
 
         // Save the current play field to a CSV file
         savePresetBt.setOnAction(e -> GuiLogic.savePreset(this, presetBox));
+
+        // Place living cells randomly on the play field
+        randomPlacementBt.setOnAction(e -> GuiLogic.placeRandomly(this, curLivingNumLabel));
 
 
         // Open the analysis window and update the GUI
