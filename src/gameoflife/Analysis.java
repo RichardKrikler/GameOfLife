@@ -24,6 +24,15 @@ public class Analysis {
 
 
     /**
+     * Getter for the cells per generation HashMap
+     * @return HashMap<Integer, Double[]>
+     */
+    public HashMap<Integer, Double[]> getCellsPerGen() {
+        return cellsPerGen;
+    }
+
+
+    /**
      * Add the amount of living cells for the current generation
      *
      * @param livingCells amount of currently living cells
