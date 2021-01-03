@@ -10,7 +10,13 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
-import javafx.scene.layout.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontPosture;
+import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 
 import java.util.concurrent.ScheduledExecutorService;
@@ -124,8 +130,17 @@ public class Gui extends Application {
         scrollPaneRight.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
         scrollPaneRight.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
 
-        // ------------------ Game Canvas ------------------
 
+        // ------------------ Game Header Label ------------------
+        Label gameLabel = new Label("Game Of Life");
+        gameLabel.setFont(Font.font("verdana", FontWeight.BOLD, FontPosture.REGULAR, 20));
+
+        StackPane gameHeaderStackPane = new StackPane();
+        gameHeaderStackPane.getChildren().add(gameLabel);
+
+        borderPaneLeft.setTop(gameHeaderStackPane);
+
+        // ------------------ Game Canvas ------------------
         ScrollPane scrollPaneLeft = new ScrollPane();
         // Always show the scroll bars
         scrollPaneLeft.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
@@ -164,7 +179,6 @@ public class Gui extends Application {
 
 
         // ------------------ Game Settings ------------------
-
         GridPane settingsGrid = new GridPane();
         // settingsGrid.setGridLinesVisible(true);
 
@@ -386,7 +400,7 @@ public class Gui extends Application {
         Scene scene = new Scene(splitPane);
         stage.setScene(scene);
         stage.setTitle("Game Of Life");
-        stage.getIcons().add(new Image(this.getClass().getResourceAsStream("/GameOfLife.png")));
+        stage.getIcons().add(new Image("/GameOfLife.png"));
         stage.setResizable(true);
 
         stage.setWidth(GUI_WIDTH);
@@ -456,7 +470,11 @@ public class Gui extends Application {
         savePresetBt.setOnAction(e -> GuiLogic.savePreset(this, presetBox));
 
 
-        analysisBt.setOnAction(e -> System.out.println("Show Analysis"));
+        // Open the analysis window and update the GUI
+        analysisBt.setOnAction(e -> {
+            AnalysisGui.show();
+            playField.updateAnalysisGui();
+        });
 
 
         // Zoom Slider for zooming into the game Canvas
@@ -473,5 +491,9 @@ public class Gui extends Application {
         // Detect if the main window has been minimized into the taskbar
         // If it has and the stopIfMinimized is true -> pause the game
         stage.iconifiedProperty().addListener((ov, t, t1) -> GuiLogic.stopGameIfMinimized(t1, stopIfMinimized, executor));
+
+
+        // Close the Analysis window when the Main window is closed
+        stage.setOnCloseRequest(e -> AnalysisGui.close());
     }
 }

@@ -87,7 +87,7 @@ public class PresetManager {
      * @return HashMap with the presets
      */
     public HashMap<String, Path> getPRESETS() {
-        return this.PRESETS;
+        return PRESETS;
     }
 
 
@@ -113,6 +113,7 @@ public class PresetManager {
                 return newPlayField;
             }
         } catch (IOException ioException) {
+            ioException.printStackTrace();
             GuiLogic.errorDialog(STAGE, "IOException", "Could not read the file!", "Error Message: " + ioException.getCause());
         }
         return null;
@@ -156,6 +157,7 @@ public class PresetManager {
             loadPresetsToMap();
             return true;
         } catch (IOException ioException) {
+            ioException.printStackTrace();
             GuiLogic.errorDialog(STAGE, "IOException", "Could not write to file!", String.valueOf(ioException.getCause()));
         }
         return false;

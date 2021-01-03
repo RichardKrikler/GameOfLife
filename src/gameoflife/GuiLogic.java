@@ -71,7 +71,6 @@ public class GuiLogic {
     /**
      * Display variable Error Dialog.
      *
-     * @param stage       top level JavaFX container for the main GUI
      * @param title       Title of the Error Dialog
      * @param headerText  Main Error Message
      * @param contentText Helpful Error Hint
@@ -180,7 +179,6 @@ public class GuiLogic {
      *                to get the play field to the next generation
      */
     static void playGame(Gui gui, Runnable runGame) {
-        System.out.println("Start Game");
         gui.executor = Executors.newScheduledThreadPool(1);
         gui.executor.scheduleAtFixedRate(runGame, 0, (long) (gui.playField.getGameSpeed() * 1000), TimeUnit.MILLISECONDS);
     }
@@ -197,6 +195,7 @@ public class GuiLogic {
             drawPlayField(gui);
             curGenNumLabel.setText(Integer.toString(gui.playField.getGeneration()));
             curLivingNumLabel.setText(Integer.toString(gui.playField.getLivingCells()));
+            gui.playField.updateAnalysisGui();
         }
     }
 

@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Tests for the PresetManager Class
  *
- * @author Richard Krikler 3BI
+ * @author Richard Krikler
  */
 class PresetManagerTest {
 

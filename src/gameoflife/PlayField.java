@@ -41,6 +41,11 @@ public class PlayField {
      */
     private final HashSet<Integer> keepLifeRule = new HashSet<>();
 
+    /**
+     * Stores the data and the functions for the game analysis
+     */
+    private final Analysis analysis = new Analysis();
+
 
     /**
      * PlayField Constructor
@@ -63,9 +68,9 @@ public class PlayField {
      */
     public PlayField(int dimensionX, int dimensionY, float gameSpeed, int[] reanimateRule, int[] keepLifeRule) {
         setSize(dimensionX, dimensionY);
-        this.setGameSpeed(gameSpeed);
-        this.setReanimateRule(reanimateRule);
-        this.setKeepLifeRule(keepLifeRule);
+        setGameSpeed(gameSpeed);
+        setReanimateRule(reanimateRule);
+        setKeepLifeRule(keepLifeRule);
     }
 
 
@@ -84,7 +89,7 @@ public class PlayField {
      * @return int[][] array which contains the play field
      */
     public int[][] getPlayField() {
-        return this.playField;
+        return playField;
     }
 
 
@@ -105,7 +110,7 @@ public class PlayField {
      * @param dimensionY y dimension of the play field
      */
     public void setSize(int dimensionX, int dimensionY) {
-        this.playField = new int[dimensionY][dimensionX];
+        playField = new int[dimensionY][dimensionX];
     }
 
 
@@ -136,7 +141,7 @@ public class PlayField {
      * @return cell value
      */
     public int getCell(int posX, int posY) {
-        return this.playField[posY][posX];
+        return playField[posY][posX];
     }
 
     /**
@@ -146,9 +151,9 @@ public class PlayField {
      * @param posY y position of the cell
      */
     public void setCell(int posX, int posY, int value) {
-        this.playField[posY][posX] = value;
+        playField[posY][posX] = value;
         if (getGeneration() == 0) {
-            this.originalPlayField = this.playField;
+            originalPlayField = playField;
         }
     }
 
@@ -159,14 +164,14 @@ public class PlayField {
      * @return integer of the generation
      */
     public int getGeneration() {
-        return this.generationCount;
+        return generationCount;
     }
 
     /**
      * Reset the generation count to zero
      */
     public void resetGeneration() {
-        this.generationCount = 0;
+        generationCount = 0;
     }
 
 
@@ -185,7 +190,7 @@ public class PlayField {
      * @return floating point value of the game speed
      */
     public float getGameSpeed() {
-        return this.gameSpeed;
+        return gameSpeed;
     }
 
 
@@ -195,9 +200,9 @@ public class PlayField {
      * @param cellsNeeded cells needed to reanimate a dead cell
      */
     public void setReanimateRule(int... cellsNeeded) {
-        this.reanimateRule.clear();
+        reanimateRule.clear();
         for (int neededCell : cellsNeeded) {
-            this.reanimateRule.add(neededCell);
+            reanimateRule.add(neededCell);
         }
     }
 
@@ -216,7 +221,7 @@ public class PlayField {
      * @return String of the Reanimation Rule
      */
     public String getReanimateRule() {
-        return this.reanimateRule.toString().replaceAll("[\\[\\]\\s]", "");
+        return reanimateRule.toString().replaceAll("[\\[\\]\\s]", "");
     }
 
     /**
@@ -225,9 +230,9 @@ public class PlayField {
      * @param cellsNeeded cells needed to keep a cell alive
      */
     public void setKeepLifeRule(int... cellsNeeded) {
-        this.keepLifeRule.clear();
+        keepLifeRule.clear();
         for (int neededCell : cellsNeeded) {
-            this.keepLifeRule.add(neededCell);
+            keepLifeRule.add(neededCell);
         }
     }
 
@@ -246,7 +251,7 @@ public class PlayField {
      * @return String of the Keep Alive Rule
      */
     public String getKeepLifeRule() {
-        return this.keepLifeRule.toString().replaceAll("[\\[\\]\\s]", "");
+        return keepLifeRule.toString().replaceAll("[\\[\\]\\s]", "");
     }
 
 
@@ -256,17 +261,20 @@ public class PlayField {
      * @return integer value with the counted cells
      */
     public int getLivingCells() {
-        int[] livingCells = {0};
+        int livingCells = 0;
 
         for (int y = 0; y < getDimensionY(); y++) {
             for (int x = 0; x < getDimensionX(); x++) {
                 if (getCell(x, y) == 1) {
-                    livingCells[0]++;
+                    livingCells++;
                 }
             }
         }
 
-        return livingCells[0];
+        analysis.addCellCount(getGeneration(), livingCells);
+        analysis.updateAnalysisGui();
+
+        return livingCells;
     }
 
     /**
@@ -328,7 +336,7 @@ public class PlayField {
         int startAt = 0;
 
         if (getGeneration() > generation) {
-            this.playField = this.originalPlayField;
+            playField = originalPlayField;
             resetGeneration();
         } else {
             startAt = getGeneration();
@@ -337,8 +345,17 @@ public class PlayField {
 
         for (int i = startAt; i < generation; i++) {
             stepForward();
+            analysis.addCellCount(getGeneration(), getLivingCells());
         }
 
         return true;
+    }
+
+
+    /**
+     * Call the updateAnalysis function in the Analysis class
+     */
+    public void updateAnalysisGui() {
+        analysis.updateAnalysisGui();
     }
 }

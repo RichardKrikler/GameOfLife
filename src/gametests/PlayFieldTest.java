@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Tests for the PlayField Class
  *
- * @author Richard Krikler 3BI
+ * @author Richard Krikler
  */
 class PlayFieldTest {
 
