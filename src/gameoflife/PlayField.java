@@ -306,9 +306,9 @@ public class PlayField {
                 for (int yRad = y - 1; yRad <= y + 1; yRad++) {
                     for (int xRad = x - 1; xRad <= x + 1; xRad++) {
                         // Make sure that the surrounded cell is not out of bounds or at the same place as the original cell
-                        if ((!(yRad == y && xRad == x)) &&
-                                (yRad >= 0 && yRad < getDimensionY()) &&
-                                (xRad >= 0 && xRad < getDimensionX())) {
+                        if ((!(yRad == y && xRad == x))
+                                && (yRad >= 0 && yRad < getDimensionY())
+                                && (xRad >= 0 && xRad < getDimensionX())) {
                             // Increase the surroundedLivingCells variable with the value of the cell
                             surroundedLivingCells += getCell(xRad, yRad);
                         }

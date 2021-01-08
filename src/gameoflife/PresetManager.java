@@ -22,41 +22,41 @@ public class PresetManager {
     /**
      * Store the path to the folder, which contains the presets
      */
-    private final String PRESET_PATH;
+    private final String presetPath;
 
     /**
      * Save the available presets in the resources/PlayFieldPresets in a Map
      * String = name of the preset
      * Path = location of the preset
      */
-    private final HashMap<String, Path> PRESETS = new HashMap<>();
+    private final HashMap<String, Path> presets = new HashMap<>();
 
     /**
      * FileChooser for the file selection dialogs
      */
-    private final FileChooser FILE_CHOOSER = new FileChooser();
+    private final FileChooser fileChooser = new FileChooser();
 
     /**
      * stage: top level JavaFX container for the main GUI
      */
-    private final Stage STAGE;
+    private final Stage stage;
 
     /**
      * PresetManager Constructor
      *
-     * @param PRESET_PATH path to the folder, which contains the presets
+     * @param presetPath path to the folder, which contains the presets
      */
-    public PresetManager(Stage stage, String PRESET_PATH) {
-        this.STAGE = stage;
-        this.PRESET_PATH = PRESET_PATH;
+    public PresetManager(Stage stage, String presetPath) {
+        this.stage = stage;
+        this.presetPath = presetPath;
         loadPresetsToMap();
 
 
         // File Extension = CSV
-        FILE_CHOOSER.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV files (*.csv)", "*.csv"));
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV files (*.csv)", "*.csv"));
 
         // Initial / Default Directory = preset path
-        FILE_CHOOSER.setInitialDirectory(new File(this.PRESET_PATH));
+        fileChooser.setInitialDirectory(new File(this.presetPath));
     }
 
 
@@ -64,16 +64,16 @@ public class PresetManager {
      * Load the files from the presets folder into the presets Map
      */
     public void loadPresetsToMap() {
-        PRESETS.clear();
-        PRESETS.put("", null);
-        File[] presetFiles = new File(PRESET_PATH).listFiles();
+        presets.clear();
+        presets.put("", null);
+        File[] presetFiles = new File(presetPath).listFiles();
 
         // If there are any files in the preset folder ->
         // put the files and the filenames (without the ".csv" extension) into the presets Map
         if (presetFiles != null) {
             for (File presetFile : presetFiles) {
                 if (presetFile.isFile()) {
-                    PRESETS.put(presetFile.getName().replaceAll(".csv$", ""), presetFile.toPath());
+                    presets.put(presetFile.getName().replaceAll(".csv$", ""), presetFile.toPath());
                 }
             }
         }
@@ -86,16 +86,18 @@ public class PresetManager {
      *
      * @return HashMap with the presets
      */
-    public HashMap<String, Path> getPRESETS() {
-        return PRESETS;
+    public HashMap<String, Path> getPresets() {
+        return presets;
     }
 
 
     /**
-     * Get an observable list of the preset filenames
+     * Get a list of the preset filenames
+     *
+     * @return observable list from the presets map keySet
      */
     public ObservableList<String> getObservableList() {
-        return FXCollections.observableArrayList(PRESETS.keySet());
+        return FXCollections.observableArrayList(presets.keySet());
     }
 
 
@@ -108,13 +110,14 @@ public class PresetManager {
         try {
             int[][] newPlayField = loadFromCSV(Files.readAllLines(srcPath));
             if (newPlayField == null) {
-                GuiLogic.errorDialog(STAGE, "Loading File", "Could not load the file to the play field!", "Please check the file or try another one.");
+                GuiLogic.errorDialog(stage, "Loading File", "Could not load the file to the play field!",
+                        "Please check the file or try another one.");
             } else {
                 return newPlayField;
             }
         } catch (IOException ioException) {
             ioException.printStackTrace();
-            GuiLogic.errorDialog(STAGE, "IOException", "Could not read the file!", "Error Message: " + ioException.getCause());
+            GuiLogic.errorDialog(stage, "IOException", "Could not read the file!", "Error Message: " + ioException.getCause());
         }
         return null;
     }
@@ -126,7 +129,7 @@ public class PresetManager {
      */
     public int[][] loadPreset() {
         // Show the FileChooser open Dialog
-        File srcFile = FILE_CHOOSER.showOpenDialog(STAGE);
+        File srcFile = fileChooser.showOpenDialog(stage);
 
         // If the Dialog is cancelled or closed the value of srcFile will be null
         // If the selection is confirmed -> read the chosen file
@@ -144,12 +147,16 @@ public class PresetManager {
      * @return int[][] array which contains the play field of the preset
      */
     public int[][] loadPreset(String presetName) {
-        return loadPreset(PRESETS.get(presetName));
+        return loadPreset(presets.get(presetName));
     }
 
 
     /**
-     * Save the preset to the selected path
+     * Save the preset to a given path
+     *
+     * @param destPath  destination Path
+     * @param playField PlayField Object containing the current play field
+     * @return true if saving the play field was successful
      */
     public boolean savePreset(Path destPath, PlayField playField) {
         try {
@@ -158,14 +165,20 @@ public class PresetManager {
             return true;
         } catch (IOException ioException) {
             ioException.printStackTrace();
-            GuiLogic.errorDialog(STAGE, "IOException", "Could not write to file!", String.valueOf(ioException.getCause()));
+            GuiLogic.errorDialog(stage, "IOException", "Could not write to file!", String.valueOf(ioException.getCause()));
         }
         return false;
     }
 
+    /**
+     * Save the preset to the selected path
+     *
+     * @param playField PlayField Object containing the current play field
+     * @return true if saving the play field was successful
+     */
     public boolean savePreset(PlayField playField) {
         // Show the FileChooser save Dialog
-        File destFile = FILE_CHOOSER.showSaveDialog(STAGE);
+        File destFile = fileChooser.showSaveDialog(stage);
 
         // If the Dialog is cancelled or closed the value of destFile will be null
         // If the selection is confirmed -> write to the chosen file
@@ -179,6 +192,7 @@ public class PresetManager {
     /**
      * Convert the play field to CSV format
      *
+     * @param playField PlayField Object containing the current play field
      * @return String containing the play field
      */
     public String convertToCSV(PlayField playField) {

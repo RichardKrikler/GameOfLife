@@ -25,7 +25,8 @@ public class Analysis {
 
     /**
      * Getter for the cells per generation HashMap
-     * @return HashMap<Integer, Double[]>
+     *
+     * @return HashMap: key = Integer, value = Double[]
      */
     public HashMap<Integer, Double[]> getCellsPerGen() {
         return cellsPerGen;

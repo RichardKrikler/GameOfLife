@@ -38,23 +38,23 @@ public class AnalysisGui {
     /**
      * analysisStage: top level JavaFX container for the analysis GUI
      */
-    private static final Stage analysisStage = new Stage();
+    private static Stage analysisStage = null;
 
 
     /**
      * Series of the cells per generation for the chart
      */
-    private static final XYChart.Series<String, Number> cellsPerGenSeries = new XYChart.Series<>();
+    private static final XYChart.Series<String, Number> CELLS_PER_GEN_SERIES = new XYChart.Series<>();
 
     /**
      * Series of the cell changes per generation for the chart
      */
-    private static final XYChart.Series<String, Number> changePerGenSeries = new XYChart.Series<>();
+    private static final XYChart.Series<String, Number> CHANGE_PER_GEN_SERIES = new XYChart.Series<>();
 
     /**
      * Series of the percent cell changes per generation for the chart
      */
-    private static final XYChart.Series<String, Number> changePercentPerGenSeries = new XYChart.Series<>();
+    private static final XYChart.Series<String, Number> CHANGE_PERCENT_PER_GEN_SERIES = new XYChart.Series<>();
 
 
     /**
@@ -102,13 +102,15 @@ public class AnalysisGui {
     /**
      * DecimalFormat for rounding the double values to two decimals
      */
-    private static final DecimalFormat df2 = new DecimalFormat("#.##");
+    private static final DecimalFormat DF2 = new DecimalFormat("#.##");
 
 
     /**
      * Show the window for the game analysis
      */
     static void show() {
+        analysisStage = new Stage();
+
         // ------------------ Analysis window header ------------------
         Label analysisLabel = new Label("Game Of Life - Analysis");
         analysisLabel.setFont(Font.font("verdana", FontWeight.BOLD, FontPosture.REGULAR, 20));
@@ -129,10 +131,10 @@ public class AnalysisGui {
         cellsPerGenBC.setPrefHeight(230);
         cellsPerGenBC.setTitle("Living Cells per Generation");
 
-        cellsPerGenSeries.setName("Living Cells");
-        cellsPerGenBC.getData().add(cellsPerGenSeries);
+        CELLS_PER_GEN_SERIES.setName("Living Cells");
+        cellsPerGenBC.getData().add(CELLS_PER_GEN_SERIES);
 
-        changePerGenSeries.setName("Living Cell Changes");
+        CHANGE_PER_GEN_SERIES.setName("Living Cell Changes");
 
 
         // ------------------ Living Cell Percent Change per Generation - Chart
@@ -151,8 +153,8 @@ public class AnalysisGui {
         changePercentPerGenBC.setVisible(false);
         changePercentPerGenBC.managedProperty().bind(changePercentPerGenBC.visibleProperty());
 
-        changePercentPerGenSeries.setName("Living Cell Percent Change");
-        changePercentPerGenBC.getData().add(changePercentPerGenSeries);
+        CHANGE_PERCENT_PER_GEN_SERIES.setName("Living Cell Percent Change");
+        changePercentPerGenBC.getData().add(CHANGE_PERCENT_PER_GEN_SERIES);
 
         // ------------------ Analysis Data Grid ------------------
         GridPane analysisGrid = new GridPane();
@@ -289,20 +291,20 @@ public class AnalysisGui {
 
         // ------------------ Event Handlers ------------------
         livingCellsCB.selectedProperty().addListener(e -> {
-            // If the livingCellsCB checkbox is checked display the cellsPerGenSeries
+            // If the livingCellsCB checkbox is checked display the CELLS_PER_GEN_SERIES
             if (livingCellsCB.selectedProperty().getValue()) {
-                cellsPerGenBC.getData().add(cellsPerGenSeries);
+                cellsPerGenBC.getData().add(CELLS_PER_GEN_SERIES);
             } else {
-                cellsPerGenBC.getData().remove(cellsPerGenSeries);
+                cellsPerGenBC.getData().remove(CELLS_PER_GEN_SERIES);
             }
         });
 
         cellChangesCB.selectedProperty().addListener(e -> {
-            // If the cellChangesCB checkbox is checked display the changePerGenSeries
+            // If the cellChangesCB checkbox is checked display the CHANGE_PER_GEN_SERIES
             if (cellChangesCB.selectedProperty().getValue()) {
-                cellsPerGenBC.getData().add(changePerGenSeries);
+                cellsPerGenBC.getData().add(CHANGE_PER_GEN_SERIES);
             } else {
-                cellsPerGenBC.getData().remove(changePerGenSeries);
+                cellsPerGenBC.getData().remove(CHANGE_PER_GEN_SERIES);
             }
         });
 
@@ -325,7 +327,11 @@ public class AnalysisGui {
      * @return true if the window is showing
      */
     static boolean isShowing() {
-        return analysisStage.isShowing();
+        if (analysisStage != null) {
+            return analysisStage.isShowing();
+        } else {
+            return false;
+        }
     }
 
 
@@ -333,7 +339,9 @@ public class AnalysisGui {
      * Close the window for the game analysis
      */
     static void close() {
-        analysisStage.close();
+        if (analysisStage != null) {
+            analysisStage.close();
+        }
     }
 
 
@@ -346,22 +354,22 @@ public class AnalysisGui {
         Platform.runLater(() -> {
             // Update Analysis Data Grid
             generationNumLabel.setText(String.valueOf(cellsPerGen.size() - 1));
-            minCellsNumLabel.setText(df2.format((cellsPerGen.values().stream().mapToDouble(v -> v[0]).min()).orElse(-1)));
-            maxCellsNumLabel.setText(df2.format((cellsPerGen.values().stream().mapToDouble(v -> v[0]).max()).orElse(-1)));
-            avgCellsNumLabel.setText(df2.format((cellsPerGen.values().stream().mapToDouble(v -> v[0]).average()).orElse(-1)));
-            avgChangeNumLabel.setText(df2.format((cellsPerGen.values().stream().mapToDouble(v -> Math.abs(v[1])).average()).orElse(-1)));
-            avgChangePercentNumLabel.setText(df2.format((cellsPerGen.values().stream().mapToDouble(v -> Math.abs(v[2])).average()).orElse(-1)));
+            minCellsNumLabel.setText(DF2.format((cellsPerGen.values().stream().mapToDouble(v -> v[0]).min()).orElse(-1)));
+            maxCellsNumLabel.setText(DF2.format((cellsPerGen.values().stream().mapToDouble(v -> v[0]).max()).orElse(-1)));
+            avgCellsNumLabel.setText(DF2.format((cellsPerGen.values().stream().mapToDouble(v -> v[0]).average()).orElse(-1)));
+            avgChangeNumLabel.setText(DF2.format((cellsPerGen.values().stream().mapToDouble(v -> Math.abs(v[1])).average()).orElse(-1)));
+            avgChangePercentNumLabel.setText(DF2.format((cellsPerGen.values().stream().mapToDouble(v -> Math.abs(v[2])).average()).orElse(-1)));
 
             // Clear the data in the 3 series
-            cellsPerGenSeries.getData().clear();
-            changePerGenSeries.getData().clear();
-            changePercentPerGenSeries.getData().clear();
+            CELLS_PER_GEN_SERIES.getData().clear();
+            CHANGE_PER_GEN_SERIES.getData().clear();
+            CHANGE_PERCENT_PER_GEN_SERIES.getData().clear();
 
             // Add the new data to the 3 series
             for (Map.Entry<Integer, Double[]> entry : cellsPerGen.entrySet()) {
-                cellsPerGenSeries.getData().add(new XYChart.Data<>(Integer.toString(entry.getKey()), entry.getValue()[0]));
-                changePerGenSeries.getData().add(new XYChart.Data<>(Integer.toString(entry.getKey()), entry.getValue()[1]));
-                changePercentPerGenSeries.getData().add(new XYChart.Data<>(Integer.toString(entry.getKey()), entry.getValue()[2]));
+                CELLS_PER_GEN_SERIES.getData().add(new XYChart.Data<>(Integer.toString(entry.getKey()), entry.getValue()[0]));
+                CHANGE_PER_GEN_SERIES.getData().add(new XYChart.Data<>(Integer.toString(entry.getKey()), entry.getValue()[1]));
+                CHANGE_PERCENT_PER_GEN_SERIES.getData().add(new XYChart.Data<>(Integer.toString(entry.getKey()), entry.getValue()[2]));
             }
 
             // Change color of changePercentPerGenBC chart

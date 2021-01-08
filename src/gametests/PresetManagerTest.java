@@ -51,7 +51,7 @@ class PresetManagerTest {
         HashMap<String, Path> presets = new HashMap<>();
         presets.put("", null);
         presets.put("Field0_0", Path.of("resources/JUnitTests/PresetManagerTest/Field0_0.csv"));
-        assertEquals(presets, presetManager.getPRESETS());
+        assertEquals(presets, presetManager.getPresets());
     }
 
     @Test
