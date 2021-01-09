@@ -8,7 +8,15 @@ import javafx.geometry.Orientation;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Slider;
+import javafx.scene.control.SplitPane;
+import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
@@ -69,7 +77,9 @@ public class Gui extends Application {
     static ScheduledExecutorService executor;
 
     /**
-     * Boolean value, which is true if the game should stop when the window is minimized into the taskbar
+     * Boolean value, which is true if the game should stop
+     * when the window is minimized into the taskbar
+     *
      * The value is equals to the checkbox value (stopIfMinimizedCB)
      */
     static boolean stopIfMinimized;
@@ -146,7 +156,10 @@ public class Gui extends Application {
         scrollPaneLeft.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
         scrollPaneLeft.setHbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
 
-        gameCanvas = new Canvas(playField.getDimensionX() * sizePerCell, playField.getDimensionY() * sizePerCell);
+        gameCanvas = new Canvas(
+                playField.getDimensionX() * sizePerCell,
+                playField.getDimensionY() * sizePerCell);
+
         // Canvas inside of a StackPane
         StackPane stackPane = new StackPane(gameCanvas);
 
@@ -419,7 +432,8 @@ public class Gui extends Application {
         setDimensionBt.setOnAction(e -> GuiLogic.setDimensions(xDimTf, yDimTf, curLivingNumLabel));
 
 
-        // Runnable, which is periodically called from the ScheduledExecutorService, to get the play field to the next generation
+        // Runnable, which is periodically called from the ScheduledExecutorService,
+        // to get the play field to the next generation
         Runnable runGame = () -> {
             if (playField.stepForward()) {
                 // Updating GUI elements can only be done in the Application thread
@@ -494,11 +508,13 @@ public class Gui extends Application {
 
 
         // Change the value of stopIfMinimized to the value of the according CheckBox (stopIfMinimizedCB)
-        stopIfMinimizedCB.selectedProperty().addListener(e -> stopIfMinimized = stopIfMinimizedCB.selectedProperty().getValue());
+        stopIfMinimizedCB.selectedProperty().addListener(
+                e -> stopIfMinimized = stopIfMinimizedCB.selectedProperty().getValue());
 
         // Detect if the main window has been minimized into the taskbar
         // If it has and the stopIfMinimized is true -> pause the game
-        stage.iconifiedProperty().addListener((ov, t, t1) -> GuiLogic.stopGameIfMinimized(t1, stopIfMinimized, executor));
+        stage.iconifiedProperty().addListener(
+                (ov, t, t1) -> GuiLogic.stopGameIfMinimized(t1, stopIfMinimized, executor));
 
 
         // Close the Analysis window when the Main window is closed

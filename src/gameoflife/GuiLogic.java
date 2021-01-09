@@ -1,6 +1,10 @@
 package gameoflife;
 
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.Slider;
+import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
@@ -26,7 +30,7 @@ public class GuiLogic {
     /**
      * RegExp Pattern for the game speed input text field
      */
-    private static final Pattern GAME_SPEED_PAT = Pattern.compile("^([1-9]\\d*(\\.\\d*)?)|(\\d*\\.\\d{0,2}[1-9]0*)$");
+    private static final Pattern GAME_SPEED_PAT = Pattern.compile("^([1-9]\\d*(\\.\\d{0,2})?0*)|(\\d*\\.\\d?[1-9]0*)$");
 
     /**
      * RegExp Pattern for the game rule input text field
@@ -51,7 +55,11 @@ public class GuiLogic {
             for (int x = 0; x < Gui.playField.getDimensionX(); x++) {
                 if (Gui.playField.getCell(x, y) == 1) {
                     Gui.gc.setFill(Color.web("98E35B"));
-                    Gui.gc.fillRect(x * Gui.sizePerCell, y * Gui.sizePerCell, Gui.sizePerCell, Gui.sizePerCell);
+                    Gui.gc.fillRect(
+                            x * Gui.sizePerCell,
+                            y * Gui.sizePerCell,
+                            Gui.sizePerCell,
+                            Gui.sizePerCell);
                 }
             }
         }
@@ -69,6 +77,7 @@ public class GuiLogic {
     /**
      * Display variable Error Dialog.
      *
+     * @param stage       top level JavaFX container for the main GUI
      * @param title       Title of the Error Dialog
      * @param headerText  Main Error Message
      * @param contentText Helpful Error Hint
@@ -84,6 +93,9 @@ public class GuiLogic {
 
     /**
      * Pause the game -> stop the ScheduledExecutorService
+     *
+     * @param executor scheduled executor service
+     *                 for periodically getting the play field to the next generation
      */
     static void pauseGame(ScheduledExecutorService executor) {
         if (executor != null) {
@@ -100,7 +112,9 @@ public class GuiLogic {
      * @param curGenNumLabel    label for displaying the current generation
      * @param curLivingNumLabel label for displaying the current amount of living cells
      */
-    static void updatePlayField(int[][] newPlayField, TextField xDimTf, TextField yDimTf, Label curGenNumLabel, Label curLivingNumLabel) {
+    static void updatePlayField(int[][] newPlayField,
+                                TextField xDimTf, TextField yDimTf,
+                                Label curGenNumLabel, Label curLivingNumLabel) {
         if (newPlayField != null) {
             pauseGame(Gui.executor);
             Gui.playField.setPlayField(newPlayField);
@@ -138,7 +152,8 @@ public class GuiLogic {
      * @param yDimTf            text field for the Y dimension input
      * @param curLivingNumLabel label for displaying the current amount of living cells
      */
-    static void setDimensions(TextField xDimTf, TextField yDimTf, Label curLivingNumLabel) {
+    static void setDimensions(TextField xDimTf, TextField yDimTf,
+                              Label curLivingNumLabel) {
         String xDim = xDimTf.getText();
         String yDim = yDimTf.getText();
 
@@ -147,17 +162,24 @@ public class GuiLogic {
 
         // If X dimension is invalid -> Display Error Message
         if (!validXDim) {
-            errorDialog(Gui.stage, "Input Error", "The X dimension (\"" + xDim + "\") is not valid!", "Only integers are allowed.");
+            errorDialog(Gui.stage,
+                    "Input Error",
+                    "The X dimension (\"" + xDim + "\") is not valid!",
+                    "Only integers are allowed.");
             xDimTf.setText(Integer.toString(Gui.playField.getDimensionX()));
         }
 
         // If Y dimension is invalid -> Display Error Message
         if (!validYDim) {
-            errorDialog(Gui.stage, "Input Error", "The Y dimension (\"" + yDim + "\") is not valid!", "Only integers are allowed.");
+            errorDialog(Gui.stage,
+                    "Input Error",
+                    "The Y dimension (\"" + yDim + "\") is not valid!",
+                    "Only integers are allowed.");
             yDimTf.setText(Integer.toString(Gui.playField.getDimensionY()));
         }
 
-        // If both inputs are valid -> set the dimensions of the playground and the size of the canvas
+        // If both inputs are valid -> set the dimensions of the playground
+        // and the size of the canvas
         if (validXDim && validYDim) {
             pauseGame(Gui.executor);
             Gui.playField.setSize(Integer.parseInt(xDim), Integer.parseInt(yDim));
@@ -174,7 +196,11 @@ public class GuiLogic {
      */
     static void playGame(Runnable runGame) {
         Gui.executor = Executors.newScheduledThreadPool(1);
-        Gui.executor.scheduleAtFixedRate(runGame, 0, (long) (Gui.playField.getGameSpeed() * 1000), TimeUnit.MILLISECONDS);
+        Gui.executor.scheduleAtFixedRate(
+                runGame,
+                0,
+                (long) (Gui.playField.getGameSpeed() * 1000),
+                TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -213,7 +239,8 @@ public class GuiLogic {
      * @param curLivingNumLabel label for displaying the current amount of living cells
      * @param goToTf            text field for the wished generation
      */
-    static void goToGen(Label curGenNumLabel, Label curLivingNumLabel, TextField goToTf) {
+    static void goToGen(Label curGenNumLabel, Label curLivingNumLabel,
+                        TextField goToTf) {
         String gen = goToTf.getText();
         boolean validGen = INTEGER_PAT.matcher(gen).matches();
 
@@ -227,7 +254,10 @@ public class GuiLogic {
             }
         } else {
             // If generation is invalid -> Display Error Message
-            errorDialog(Gui.stage, "Input Error", "The Generation (\"" + gen + "\") is not valid!", "Only integers are allowed.");
+            errorDialog(Gui.stage,
+                    "Input Error",
+                    "The Generation (\"" + gen + "\") is not valid!",
+                    "Only integers are allowed.");
             goToTf.setText("");
         }
     }
@@ -277,9 +307,12 @@ public class GuiLogic {
             pauseGame(Gui.executor);
             Gui.playField.setGameSpeed(Float.parseFloat(gameSpeed));
         } else {
-            errorDialog(Gui.stage, "Input Error", "The Game Speed (\"" + gameSpeed + "\") is not valid!",
+            errorDialog(Gui.stage,
+                    "Input Error",
+                    "The Game Speed (\"" + gameSpeed + "\") is not valid!",
                     "Only integers or floating point values are allowed. "
-                            + "There is a maximum of 3 decimal points. The values are interpreted in seconds. Minimum value = 0.001");
+                            + "There is a maximum of 2 decimal points. "
+                            + "The values are interpreted in seconds. Minimum value = 0.01");
             speedTf.setText(Float.toString(Gui.playField.getGameSpeed()));
         }
     }
@@ -301,13 +334,19 @@ public class GuiLogic {
 
         // If Reanimate Rule is invalid -> Display Error Message
         if (!validReanimateRule) {
-            errorDialog(Gui.stage, "Input Error", "The Reanimate Rule (\"" + reanimateRule + "\") is not valid!", errorExplanation);
+            errorDialog(Gui.stage,
+                    "Input Error",
+                    "The Reanimate Rule (\"" + reanimateRule + "\") is not valid!",
+                    errorExplanation);
             reanimateRuleTf.setText(Gui.playField.getReanimateRule());
         }
 
         // If Keep Alive Rule is invalid -> Display Error Message
         if (!validKeepLifeRule) {
-            errorDialog(Gui.stage, "Input Error", "The Keep Alive Rule (\"" + keepLifeRule + "\") is not valid!", errorExplanation);
+            errorDialog(Gui.stage,
+                    "Input Error",
+                    "The Keep Alive Rule (\"" + keepLifeRule + "\") is not valid!",
+                    errorExplanation);
             keepLifeRuleTf.setText(Gui.playField.getKeepLifeRule());
         }
 
@@ -327,7 +366,9 @@ public class GuiLogic {
      * @param curLivingNumLabel label for displaying the current amount of living cells
      * @param presetBox         combo box for the presets in the preset folder
      */
-    static void presetBox(TextField xDimTf, TextField yDimTf, Label curGenNumLabel, Label curLivingNumLabel, ComboBox<String> presetBox) {
+    static void presetBox(TextField xDimTf, TextField yDimTf,
+                          Label curGenNumLabel, Label curLivingNumLabel,
+                          ComboBox<String> presetBox) {
         if (presetBox.getValue() != null && !presetBox.getValue().equals("")) {
             String selectedItem = presetBox.getSelectionModel().getSelectedItem();
             presetBox.getSelectionModel().select(0);
@@ -345,7 +386,8 @@ public class GuiLogic {
      * @param curGenNumLabel    label for displaying the current generation
      * @param curLivingNumLabel label for displaying the current amount of living cells
      */
-    static void loadPreset(TextField xDimTf, TextField yDimTf, Label curGenNumLabel, Label curLivingNumLabel) {
+    static void loadPreset(TextField xDimTf, TextField yDimTf,
+                           Label curGenNumLabel, Label curLivingNumLabel) {
         int[][] newPlayField = Gui.presetManager.loadPreset();
         GuiLogic.updatePlayField(newPlayField, xDimTf, yDimTf, curGenNumLabel, curLivingNumLabel);
     }
@@ -411,8 +453,8 @@ public class GuiLogic {
     /**
      * Pause the game if the window is minimized and if stopIfMinimized is true
      *
-     * @param t1              boolean value, which is true if the window has been minimized into the taskbar
-     * @param stopIfMinimized boolean value, which is true if the game should stop when the window is minimized into the taskbar
+     * @param t1              (boolean) true if the window has been minimized into the taskbar
+     * @param stopIfMinimized (boolean) true if the game should stop when the window is minimized into the taskbar
      * @param executor        scheduled executor service for periodically getting the play field to the next generation
      */
     static void stopGameIfMinimized(Boolean t1, boolean stopIfMinimized, ScheduledExecutorService executor) {

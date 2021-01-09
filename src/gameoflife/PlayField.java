@@ -66,7 +66,9 @@ public class PlayField {
      * @param reanimateRule int array of the needed cells for the reanimate rule
      * @param keepLifeRule  int array of the needed cells for the keep life rule
      */
-    public PlayField(int dimensionX, int dimensionY, float gameSpeed, int[] reanimateRule, int[] keepLifeRule) {
+    public PlayField(int dimensionX, int dimensionY,
+                     float gameSpeed,
+                     int[] reanimateRule, int[] keepLifeRule) {
         setSize(dimensionX, dimensionY);
         setGameSpeed(gameSpeed);
         setReanimateRule(reanimateRule);
@@ -110,7 +112,11 @@ public class PlayField {
      * @return x dimension
      */
     public int getDimensionX() {
-        return playField.length > 0 ? playField[0].length : 0;
+        if (playField.length > 0) {
+            return playField[0].length;
+        } else {
+            return 0;
+        }
     }
 
     /**
@@ -139,6 +145,7 @@ public class PlayField {
      *
      * @param posX x position of the cell
      * @param posY y position of the cell
+     * @param value of the cell; 1 = alive, 0 = dead
      */
     public void setCell(int posX, int posY, int value) {
         playField[posY][posX] = value;
@@ -305,7 +312,8 @@ public class PlayField {
                 // Go through the surrounding cells of the cell at (x|y)
                 for (int yRad = y - 1; yRad <= y + 1; yRad++) {
                     for (int xRad = x - 1; xRad <= x + 1; xRad++) {
-                        // Make sure that the surrounded cell is not out of bounds or at the same place as the original cell
+                        // Make sure that the surrounded cell is not out of bounds
+                        // or at the same place as the original cell
                         if ((!(yRad == y && xRad == x))
                                 && (yRad >= 0 && yRad < getDimensionY())
                                 && (xRad >= 0 && xRad < getDimensionX())) {
@@ -338,8 +346,9 @@ public class PlayField {
     }
 
     /**
-     * Get the play field to the last generation
+     * Get the play field to a specific generation
      *
+     * @param generation to which the play field is being updated
      * @return true if it was possible to go to the last generation
      */
     public boolean stepTo(int generation) {

@@ -36,6 +36,7 @@ public class Analysis {
     /**
      * Add the amount of living cells for the current generation
      *
+     * @param generation  that corresponds to the amount of living cells
      * @param livingCells amount of currently living cells
      */
     public void addCellCount(int generation, int livingCells) {
@@ -55,14 +56,22 @@ public class Analysis {
 
             // If nothing has changed from the previous field
             // -> percent change = 0
-            percentValueChange = valueChange == 0 ? 0 : 1;
+            if (valueChange == 0) {
+                percentValueChange = 0;
+            } else {
+                percentValueChange = 1;
+            }
         } else {
             double lastValue = cellsPerGen.get(generation - 1)[0];
             valueChange = livingCells - lastValue;
 
             if (lastValue == 0) {
                 // check if the current living cells is 0 -> percent change = 0; otherwise 1
-                percentValueChange = livingCells == 0 ? 0 : 1;
+                if (livingCells == 0) {
+                    percentValueChange = 0;
+                } else {
+                    percentValueChange = 1;
+                }
             } else {
                 percentValueChange = valueChange / lastValue;
             }

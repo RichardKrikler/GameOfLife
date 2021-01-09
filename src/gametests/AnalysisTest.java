@@ -6,7 +6,8 @@ import org.junit.jupiter.api.Test;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test for the Analysis Class
@@ -29,7 +30,8 @@ class AnalysisTest {
      * @param cellsPerGen1 second Map
      * @return true if the HashMaps are equal
      */
-    public boolean equalsCellsPerGen(HashMap<Integer, Double[]> cellsPerGen0, HashMap<Integer, Double[]> cellsPerGen1) {
+    public boolean equalsCellsPerGen(HashMap<Integer, Double[]> cellsPerGen0,
+                                     HashMap<Integer, Double[]> cellsPerGen1) {
         if (!cellsPerGen0.keySet().equals(cellsPerGen1.keySet())) {
             return false;
         }

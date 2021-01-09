@@ -44,6 +44,7 @@ public class PresetManager {
     /**
      * PresetManager Constructor
      *
+     * @param stage      top level JavaFX container for the main GUI
      * @param presetPath path to the folder, which contains the presets
      */
     public PresetManager(Stage stage, String presetPath) {
@@ -53,7 +54,8 @@ public class PresetManager {
 
 
         // File Extension = CSV
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV files (*.csv)", "*.csv"));
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("CSV files (*.csv)", "*.csv"));
 
         // Initial / Default Directory = preset path
         fileChooser.setInitialDirectory(new File(this.presetPath));
@@ -104,20 +106,26 @@ public class PresetManager {
     /**
      * Load the preset from the preset file path
      *
+     * @param srcPath source Path
      * @return int[][] array which contains the play field of the preset
      */
     public int[][] loadPreset(Path srcPath) {
         try {
             int[][] newPlayField = loadFromCSV(Files.readAllLines(srcPath));
             if (newPlayField == null) {
-                GuiLogic.errorDialog(stage, "Loading File", "Could not load the file to the play field!",
+                GuiLogic.errorDialog(stage,
+                        "Loading File",
+                        "Could not load the file to the play field!",
                         "Please check the file or try another one.");
             } else {
                 return newPlayField;
             }
         } catch (IOException ioException) {
             ioException.printStackTrace();
-            GuiLogic.errorDialog(stage, "IOException", "Could not read the file!", "Error Message: " + ioException.getCause());
+            GuiLogic.errorDialog(stage,
+                    "IOException",
+                    "Could not read the file!",
+                    "Error Message: " + ioException.getCause());
         }
         return null;
     }
@@ -165,7 +173,10 @@ public class PresetManager {
             return true;
         } catch (IOException ioException) {
             ioException.printStackTrace();
-            GuiLogic.errorDialog(stage, "IOException", "Could not write to file!", String.valueOf(ioException.getCause()));
+            GuiLogic.errorDialog(stage,
+                    "IOException",
+                    "Could not write to file!",
+                    String.valueOf(ioException.getCause()));
         }
         return false;
     }

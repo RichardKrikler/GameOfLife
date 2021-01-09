@@ -354,11 +354,26 @@ public class AnalysisGui {
         Platform.runLater(() -> {
             // Update Analysis Data Grid
             generationNumLabel.setText(String.valueOf(cellsPerGen.size() - 1));
-            minCellsNumLabel.setText(DF2.format((cellsPerGen.values().stream().mapToDouble(v -> v[0]).min()).orElse(-1)));
-            maxCellsNumLabel.setText(DF2.format((cellsPerGen.values().stream().mapToDouble(v -> v[0]).max()).orElse(-1)));
-            avgCellsNumLabel.setText(DF2.format((cellsPerGen.values().stream().mapToDouble(v -> v[0]).average()).orElse(-1)));
-            avgChangeNumLabel.setText(DF2.format((cellsPerGen.values().stream().mapToDouble(v -> Math.abs(v[1])).average()).orElse(-1)));
-            avgChangePercentNumLabel.setText(DF2.format((cellsPerGen.values().stream().mapToDouble(v -> Math.abs(v[2])).average()).orElse(-1)));
+            minCellsNumLabel.setText(
+                    DF2.format((cellsPerGen.values().stream()
+                                    .mapToDouble(v -> v[0]).min())
+                                    .orElse(-1)));
+            maxCellsNumLabel.setText(
+                    DF2.format((cellsPerGen.values().stream()
+                                    .mapToDouble(v -> v[0]).max())
+                                    .orElse(-1)));
+            avgCellsNumLabel.setText(
+                    DF2.format((cellsPerGen.values().stream()
+                                    .mapToDouble(v -> v[0]).average())
+                                    .orElse(-1)));
+            avgChangeNumLabel.setText(
+                    DF2.format((cellsPerGen.values().stream()
+                            .mapToDouble(v -> Math.abs(v[1])).average())
+                            .orElse(-1)));
+            avgChangePercentNumLabel.setText(
+                    DF2.format((cellsPerGen.values().stream()
+                            .mapToDouble(v -> Math.abs(v[2])).average())
+                            .orElse(-1)));
 
             // Clear the data in the 3 series
             CELLS_PER_GEN_SERIES.getData().clear();
@@ -367,9 +382,12 @@ public class AnalysisGui {
 
             // Add the new data to the 3 series
             for (Map.Entry<Integer, Double[]> entry : cellsPerGen.entrySet()) {
-                CELLS_PER_GEN_SERIES.getData().add(new XYChart.Data<>(Integer.toString(entry.getKey()), entry.getValue()[0]));
-                CHANGE_PER_GEN_SERIES.getData().add(new XYChart.Data<>(Integer.toString(entry.getKey()), entry.getValue()[1]));
-                CHANGE_PERCENT_PER_GEN_SERIES.getData().add(new XYChart.Data<>(Integer.toString(entry.getKey()), entry.getValue()[2]));
+                CELLS_PER_GEN_SERIES.getData().add(
+                        new XYChart.Data<>(Integer.toString(entry.getKey()), entry.getValue()[0]));
+                CHANGE_PER_GEN_SERIES.getData().add(
+                        new XYChart.Data<>(Integer.toString(entry.getKey()), entry.getValue()[1]));
+                CHANGE_PERCENT_PER_GEN_SERIES.getData().add(
+                        new XYChart.Data<>(Integer.toString(entry.getKey()), entry.getValue()[2]));
             }
 
             // Change color of changePercentPerGenBC chart
