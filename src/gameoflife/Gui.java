@@ -79,7 +79,7 @@ public class Gui extends Application {
     /**
      * Boolean value, which is true if the game should stop
      * when the window is minimized into the taskbar
-     *
+     * <p>
      * The value is equals to the checkbox value (stopIfMinimizedCB)
      */
     static boolean stopIfMinimized;
@@ -515,9 +515,9 @@ public class Gui extends Application {
         // Open the analysis window and update the GUI
         analysisBt.setOnAction(
                 e -> {
-            AnalysisGui.show();
-            playField.updateAnalysisGui();
-        });
+                    AnalysisGui.show();
+                    playField.updateAnalysisGui();
+                });
 
 
         // Zoom Slider for zooming into the game Canvas
