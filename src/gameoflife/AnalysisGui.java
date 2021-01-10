@@ -360,16 +360,16 @@ public class AnalysisGui {
             generationNumLabel.setText(String.valueOf(cellsPerGen.size() - 1));
             minCellsNumLabel.setText(
                     DF2.format((cellsPerGen.values().stream()
-                                    .mapToDouble(v -> v[0]).min())
-                                    .orElse(-1)));
+                            .mapToDouble(v -> v[0]).min())
+                            .orElse(-1)));
             maxCellsNumLabel.setText(
                     DF2.format((cellsPerGen.values().stream()
-                                    .mapToDouble(v -> v[0]).max())
-                                    .orElse(-1)));
+                            .mapToDouble(v -> v[0]).max())
+                            .orElse(-1)));
             avgCellsNumLabel.setText(
                     DF2.format((cellsPerGen.values().stream()
-                                    .mapToDouble(v -> v[0]).average())
-                                    .orElse(-1)));
+                            .mapToDouble(v -> v[0]).average())
+                            .orElse(-1)));
             avgChangeNumLabel.setText(
                     DF2.format((cellsPerGen.values().stream()
                             .mapToDouble(v -> Math.abs(v[1])).average())

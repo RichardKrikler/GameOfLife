@@ -143,8 +143,8 @@ public class PlayField {
     /**
      * Set value of a specific cell.
      *
-     * @param posX x position of the cell
-     * @param posY y position of the cell
+     * @param posX  x position of the cell
+     * @param posY  y position of the cell
      * @param value of the cell; 1 = alive, 0 = dead
      */
     public void setCell(int posX, int posY, int value) {
