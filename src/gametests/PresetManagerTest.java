@@ -39,12 +39,17 @@ class PresetManagerTest {
      * stage value of null
      * standard preset path
      */
-    private final PresetManager presetManager = new PresetManager(null, "resources/JUnitTests/PresetManagerTest");
+    private final PresetManager presetManager =
+            new PresetManager(null, "resources/JUnitTests/PresetManagerTest");
 
     /**
      * Content of Field0_0.csv in PresetManagerTest
      */
-    private final int[][] field0_0 = new int[][]{{1, 0, 0, 1}, {0, 1, 1, 0}, {0, 1, 1, 0}, {1, 0, 0, 1}};
+    private final int[][] field0Gen0 = new int[][]{
+            {1, 0, 0, 1},
+            {0, 1, 1, 0},
+            {0, 1, 1, 0},
+            {1, 0, 0, 1}};
 
 
     @Test
@@ -64,12 +69,13 @@ class PresetManagerTest {
 
     @Test
     void loadPresetFromPath() {
-        assertTrue(Arrays.deepEquals(field0_0, presetManager.loadPreset(Path.of("resources/JUnitTests/PresetManagerTest/Field0_0.csv"))));
+        assertTrue(Arrays.deepEquals(field0Gen0, presetManager.loadPreset(
+                Path.of("resources/JUnitTests/PresetManagerTest/Field0_0.csv"))));
     }
 
     @Test
     void loadPresetFromName() {
-        assertTrue(Arrays.deepEquals(field0_0, presetManager.loadPreset("Field0_0")));
+        assertTrue(Arrays.deepEquals(field0Gen0, presetManager.loadPreset("Field0_0")));
 
         assertThrows(NullPointerException.class, () -> presetManager.loadPreset("xyz"));
     }

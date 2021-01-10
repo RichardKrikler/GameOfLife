@@ -44,17 +44,20 @@ public class AnalysisGui {
     /**
      * Series of the cells per generation for the chart
      */
-    private static final XYChart.Series<String, Number> CELLS_PER_GEN_SERIES = new XYChart.Series<>();
+    private static final XYChart.Series<String, Number> CELLS_PER_GEN_SERIES =
+            new XYChart.Series<>();
 
     /**
      * Series of the cell changes per generation for the chart
      */
-    private static final XYChart.Series<String, Number> CHANGE_PER_GEN_SERIES = new XYChart.Series<>();
+    private static final XYChart.Series<String, Number> CHANGE_PER_GEN_SERIES =
+            new XYChart.Series<>();
 
     /**
      * Series of the percent cell changes per generation for the chart
      */
-    private static final XYChart.Series<String, Number> CHANGE_PERCENT_PER_GEN_SERIES = new XYChart.Series<>();
+    private static final XYChart.Series<String, Number> CHANGE_PERCENT_PER_GEN_SERIES =
+            new XYChart.Series<>();
 
 
     /**
@@ -315,7 +318,8 @@ public class AnalysisGui {
                 changePercentPerGenBC.managedProperty().unbind();
             } else {
                 changePercentPerGenBC.setVisible(false);
-                changePercentPerGenBC.managedProperty().bind(changePercentPerGenBC.visibleProperty());
+                changePercentPerGenBC.managedProperty().bind(
+                        changePercentPerGenBC.visibleProperty());
             }
         });
     }

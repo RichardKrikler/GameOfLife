@@ -317,7 +317,8 @@ public class PlayField {
                         if ((!(yRad == y && xRad == x))
                                 && (yRad >= 0 && yRad < getDimensionY())
                                 && (xRad >= 0 && xRad < getDimensionX())) {
-                            // Increase the surroundedLivingCells variable with the value of the cell
+                            // Increase the surroundedLivingCells variable
+                            // with the value of the cell
                             surroundedLivingCells += getCell(xRad, yRad);
                         }
                     }

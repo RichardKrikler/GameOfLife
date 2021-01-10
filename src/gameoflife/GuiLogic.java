@@ -330,7 +330,9 @@ public class GuiLogic {
         boolean validReanimateRule = GAME_RULE_PAT.matcher(reanimateRule).matches();
         boolean validKeepLifeRule = GAME_RULE_PAT.matcher(keepLifeRule).matches();
 
-        String errorExplanation = "The rule is valid if it contains one or more integers (from 0 to 8), separated with a comma (\",\").";
+        String errorExplanation =
+                "The rule is valid if it contains one or more integers (from 0 to 8), "
+                        + "separated with a comma (\",\").";
 
         // If Reanimate Rule is invalid -> Display Error Message
         if (!validReanimateRule) {
@@ -454,10 +456,15 @@ public class GuiLogic {
      * Pause the game if the window is minimized and if stopIfMinimized is true
      *
      * @param t1              (boolean) true if the window has been minimized into the taskbar
-     * @param stopIfMinimized (boolean) true if the game should stop when the window is minimized into the taskbar
-     * @param executor        scheduled executor service for periodically getting the play field to the next generation
+     * @param stopIfMinimized (boolean) true if the game should stop
+     *                        when the window is minimized into the taskbar
+     * @param executor        scheduled executor service
+     *                        for periodically getting the play field to the next generation
      */
-    static void stopGameIfMinimized(Boolean t1, boolean stopIfMinimized, ScheduledExecutorService executor) {
+    static void stopGameIfMinimized(
+            Boolean t1,
+            boolean stopIfMinimized,
+            ScheduledExecutorService executor) {
         if (t1 && stopIfMinimized) {
             pauseGame(executor);
         }

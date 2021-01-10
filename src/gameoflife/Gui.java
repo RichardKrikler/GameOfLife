@@ -386,7 +386,8 @@ public class Gui extends Application {
 
         // Stop game if the main window is minimized into the taskbar
         Label stopIfMinimizedLabel = new Label("Stop game if minimized:");
-        stopIfMinimizedLabel.setTooltip(new Tooltip("Stop the game if the window is minimized into the taskbar."));
+        stopIfMinimizedLabel.setTooltip(
+                new Tooltip("Stop the game if the window is minimized into the taskbar."));
         settingsGrid.add(stopIfMinimizedLabel, 0, 20);
         GridPane.setColumnSpan(stopIfMinimizedLabel, 3);
 
@@ -429,7 +430,8 @@ public class Gui extends Application {
         // ------------------ Event Handlers ------------------
 
         // Change the size of the play field to the values of the text fields
-        setDimensionBt.setOnAction(e -> GuiLogic.setDimensions(xDimTf, yDimTf, curLivingNumLabel));
+        setDimensionBt.setOnAction(
+                e -> GuiLogic.setDimensions(xDimTf, yDimTf, curLivingNumLabel));
 
 
         // Runnable, which is periodically called from the ScheduledExecutorService,
@@ -448,66 +450,88 @@ public class Gui extends Application {
         };
 
         // Start the game -> initialise ScheduledExecutorService
-        playBt.setOnAction(e -> GuiLogic.playGame(runGame));
+        playBt.setOnAction(
+                e -> GuiLogic.playGame(runGame));
 
         // Pause the game -> Stop the ScheduledExecutorService
-        pauseBt.setOnAction(e -> GuiLogic.pauseGame(executor));
+        pauseBt.setOnAction(
+                e -> GuiLogic.pauseGame(executor));
 
 
         // Get the play field to the last generation
-        stepBackBt.setOnAction(e -> GuiLogic.stepBack(curGenNumLabel, curLivingNumLabel));
+        stepBackBt.setOnAction(
+                e -> GuiLogic.stepBack(curGenNumLabel, curLivingNumLabel));
 
         // Get the play field to the next generation
-        stepForwardBt.setOnAction(e -> GuiLogic.stepForward(curGenNumLabel, curLivingNumLabel));
+        stepForwardBt.setOnAction(
+                e -> GuiLogic.stepForward(curGenNumLabel, curLivingNumLabel));
 
 
         // Go the a specific Generation
-        goToBt.setOnAction(e -> GuiLogic.goToGen(curGenNumLabel, curLivingNumLabel, goToTf));
+        goToBt.setOnAction(
+                e -> GuiLogic.goToGen(curGenNumLabel, curLivingNumLabel, goToTf));
 
 
         // Reset the complete game and display the changes
-        resetBt.setOnAction(e -> GuiLogic.reset(curGenNumLabel, curLivingNumLabel));
+        resetBt.setOnAction(
+                e -> GuiLogic.reset(curGenNumLabel, curLivingNumLabel));
 
         // Reset the play field to the state of generation zero
-        resetToStartBt.setOnAction(e -> GuiLogic.resetToStart(curGenNumLabel, curLivingNumLabel));
+        resetToStartBt.setOnAction(
+                e -> GuiLogic.resetToStart(curGenNumLabel, curLivingNumLabel));
 
 
         // Change the game speed of the play field to the value of the text field
-        setSpeedBt.setOnAction(e -> GuiLogic.setSpeed(speedTf));
+        setSpeedBt.setOnAction(
+                e -> GuiLogic.setSpeed(speedTf));
 
         // Change the game rules of the play field to the values of the text fields
-        gameRulesBt.setOnAction(e -> GuiLogic.setGameRules(reanimateRuleTf, keepLifeRuleTf));
+        gameRulesBt.setOnAction(
+                e -> GuiLogic.setGameRules(reanimateRuleTf, keepLifeRuleTf));
 
 
         // Load the selected preset (file) from the dropdown menu of the presetBox
-        presetBox.setOnAction(e -> GuiLogic.presetBox(xDimTf, yDimTf, curGenNumLabel, curLivingNumLabel, presetBox));
+        presetBox.setOnAction(
+                e -> GuiLogic.presetBox(
+                        xDimTf, yDimTf,
+                        curGenNumLabel, curLivingNumLabel,
+                        presetBox));
 
         // Load a preset into the play field
-        loadPresetBt.setOnAction(e -> GuiLogic.loadPreset(xDimTf, yDimTf, curGenNumLabel, curLivingNumLabel));
+        loadPresetBt.setOnAction(
+                e -> GuiLogic.loadPreset(
+                        xDimTf, yDimTf,
+                        curGenNumLabel, curLivingNumLabel));
 
         // Save the current play field to a CSV file
-        savePresetBt.setOnAction(e -> GuiLogic.savePreset(presetBox));
+        savePresetBt.setOnAction(
+                e -> GuiLogic.savePreset(presetBox));
 
         // Place living cells randomly on the play field
-        randomPlacementBt.setOnAction(e -> GuiLogic.placeRandomly(curLivingNumLabel));
+        randomPlacementBt.setOnAction(
+                e -> GuiLogic.placeRandomly(curLivingNumLabel));
 
 
         // Open the analysis window and update the GUI
-        analysisBt.setOnAction(e -> {
+        analysisBt.setOnAction(
+                e -> {
             AnalysisGui.show();
             playField.updateAnalysisGui();
         });
 
 
         // Zoom Slider for zooming into the game Canvas
-        zoomSlider.valueProperty().addListener(e -> GuiLogic.changeZoom(zoomSlider));
+        zoomSlider.valueProperty().addListener(
+                e -> GuiLogic.changeZoom(zoomSlider));
 
 
         // Change the value of a cell to living or dead
-        gameCanvas.setOnMouseClicked(e -> GuiLogic.changeCellState(e, curLivingNumLabel));
+        gameCanvas.setOnMouseClicked(
+                e -> GuiLogic.changeCellState(e, curLivingNumLabel));
 
 
-        // Change the value of stopIfMinimized to the value of the according CheckBox (stopIfMinimizedCB)
+        // Change the value of stopIfMinimized
+        // to the value of the according CheckBox (stopIfMinimizedCB)
         stopIfMinimizedCB.selectedProperty().addListener(
                 e -> stopIfMinimized = stopIfMinimizedCB.selectedProperty().getValue());
 
@@ -518,6 +542,7 @@ public class Gui extends Application {
 
 
         // Close the Analysis window when the Main window is closed
-        stage.setOnCloseRequest(e -> AnalysisGui.close());
+        stage.setOnCloseRequest(
+                e -> AnalysisGui.close());
     }
 }

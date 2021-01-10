@@ -37,7 +37,8 @@ class PlayFieldTest {
      * stage value of null
      * standard preset path
      */
-    private final PresetManager presetManager = new PresetManager(null, "resources/PlayFieldPresets");
+    private final PresetManager presetManager =
+            new PresetManager(null, "resources/PlayFieldPresets");
 
 
     @Test
@@ -131,37 +132,42 @@ class PlayFieldTest {
 
     @Test
     void stepForward() {
-        int[][] startingField = {{0, 0, 0, 0, 0, 0, 0, 0},
-                {0, 0, 1, 0, 0, 1, 1, 0},
-                {0, 0, 0, 0, 0, 1, 0, 0},
-                {0, 0, 0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0, 0, 0},
-                {1, 0, 0, 0, 0, 0, 0, 0},
-                {0, 1, 0, 0, 0, 1, 1, 0},
-                {0, 0, 0, 0, 0, 1, 1, 0}};
+        int[][] startingField = {
+            {0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 1, 0, 0, 1, 1, 0},
+            {0, 0, 0, 0, 0, 1, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0},
+            {1, 0, 0, 0, 0, 0, 0, 0},
+            {0, 1, 0, 0, 0, 1, 1, 0},
+            {0, 0, 0, 0, 0, 1, 1, 0}};
 
-        int[][] nextField = {{0, 0, 0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 1, 1, 0},
-                {0, 0, 0, 0, 0, 1, 1, 0},
-                {0, 0, 0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 1, 1, 0},
-                {0, 0, 0, 0, 0, 1, 1, 0}};
+        int[][] nextField = {
+            {0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 1, 1, 0},
+            {0, 0, 0, 0, 0, 1, 1, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 1, 1, 0},
+            {0, 0, 0, 0, 0, 1, 1, 0}};
 
         playField.setPlayField(startingField);
         playField.stepForward();
         assertTrue(Arrays.deepEquals(nextField, playField.getPlayField()));
 
 
-        startingField = presetManager.loadPreset(Path.of("resources/JUnitTests/PlayFieldTest/Field0_0.csv"));
-        nextField = presetManager.loadPreset(Path.of("resources/JUnitTests/PlayFieldTest/Field0_1_3,2-3.csv"));
+        startingField = presetManager.loadPreset(
+                Path.of("resources/JUnitTests/PlayFieldTest/Field0_0.csv"));
+        nextField = presetManager.loadPreset(
+                Path.of("resources/JUnitTests/PlayFieldTest/Field0_1_3,2-3.csv"));
         playField.setPlayField(startingField);
         playField.stepForward();
         assertTrue(Arrays.deepEquals(nextField, playField.getPlayField()));
 
 
-        nextField = presetManager.loadPreset(Path.of("resources/JUnitTests/PlayFieldTest/Field0_1_2-3-7,2-3-6.csv"));
+        nextField = presetManager.loadPreset(
+                Path.of("resources/JUnitTests/PlayFieldTest/Field0_1_2-3-7,2-3-6.csv"));
         playField.setPlayField(startingField);
         playField.setReanimateRule(2, 3, 7);
         playField.setKeepLifeRule(2, 3, 6);
@@ -171,23 +177,25 @@ class PlayFieldTest {
 
     @Test
     void stepTo() {
-        int[][] startingField = {{0, 0, 0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 1, 1, 0, 0, 0},
-                {0, 0, 1, 1, 0, 0, 0, 0},
-                {0, 0, 0, 1, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0, 0, 0}};
+        int[][] startingField = {
+            {0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 1, 1, 0, 0, 0},
+            {0, 0, 1, 1, 0, 0, 0, 0},
+            {0, 0, 0, 1, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0}};
 
-        int[][] resultField = {{0, 0, 0, 0, 0, 0, 0, 0},
-                {0, 0, 1, 1, 0, 0, 0, 0},
-                {0, 0, 1, 1, 1, 0, 0, 0},
-                {0, 1, 0, 0, 1, 0, 0, 0},
-                {0, 0, 1, 1, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0, 0, 0}};
+        int[][] resultField = {
+            {0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 1, 1, 0, 0, 0, 0},
+            {0, 0, 1, 1, 1, 0, 0, 0},
+            {0, 1, 0, 0, 1, 0, 0, 0},
+            {0, 0, 1, 1, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0}};
 
         playField.setPlayField(startingField);
         playField.stepTo(3);
@@ -195,16 +203,20 @@ class PlayFieldTest {
 
 
         playField.resetGeneration();
-        startingField = presetManager.loadPreset(Path.of("resources/JUnitTests/PlayFieldTest/Field1_0.csv"));
-        resultField = presetManager.loadPreset(Path.of("resources/JUnitTests/PlayFieldTest/Field1_17_3,2-3.csv"));
+        startingField = presetManager.loadPreset(
+                Path.of("resources/JUnitTests/PlayFieldTest/Field1_0.csv"));
+        resultField = presetManager.loadPreset(
+                Path.of("resources/JUnitTests/PlayFieldTest/Field1_17_3,2-3.csv"));
         playField.setPlayField(startingField);
         playField.stepTo(17);
         assertTrue(Arrays.deepEquals(resultField, playField.getPlayField()));
 
 
         playField.resetGeneration();
-        startingField = presetManager.loadPreset(Path.of("resources/JUnitTests/PlayFieldTest/Field1_0.csv"));
-        resultField = presetManager.loadPreset(Path.of("resources/JUnitTests/PlayFieldTest/Field1_30_2-6,4-5.csv"));
+        startingField = presetManager.loadPreset(
+                Path.of("resources/JUnitTests/PlayFieldTest/Field1_0.csv"));
+        resultField = presetManager.loadPreset(
+                Path.of("resources/JUnitTests/PlayFieldTest/Field1_30_2-6,4-5.csv"));
         playField.setPlayField(startingField);
         playField.setReanimateRule(2, 6);
         playField.setKeepLifeRule(4, 5);
