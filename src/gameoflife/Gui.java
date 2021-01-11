@@ -99,6 +99,11 @@ public class Gui extends Application {
      */
     static PresetManager presetManager;
 
+    /**
+     * Width of the TextFields of the Settings
+     */
+    static final int TF_WIDTH = 55;
+
 
     /**
      * Main method launching the main GUI.
@@ -195,12 +200,13 @@ public class Gui extends Application {
         GridPane settingsGrid = new GridPane();
         // settingsGrid.setGridLinesVisible(true);
 
+        final int colWidth = 33;
         ColumnConstraints col1 = new ColumnConstraints();
-        col1.setPercentWidth(33);
+        col1.setPercentWidth(colWidth);
         ColumnConstraints col2 = new ColumnConstraints();
-        col2.setPercentWidth(33);
+        col2.setPercentWidth(colWidth);
         ColumnConstraints col3 = new ColumnConstraints();
-        col3.setPercentWidth(33);
+        col3.setPercentWidth(colWidth);
         settingsGrid.getColumnConstraints().addAll(col1, col2, col3);
 
 
@@ -236,12 +242,12 @@ public class Gui extends Application {
 
         TextField xDimTf = new TextField(Integer.toString(playField.getDimensionX()));
         xDimTf.setPromptText("X-Dim");
-        xDimTf.setMaxWidth(55);
+        xDimTf.setMaxWidth(TF_WIDTH);
         settingsGrid.add(xDimTf, 0, 4);
 
         TextField yDimTf = new TextField(Integer.toString(playField.getDimensionY()));
         yDimTf.setPromptText("Y-Dim");
-        yDimTf.setMaxWidth(55);
+        yDimTf.setMaxWidth(TF_WIDTH);
         settingsGrid.add(yDimTf, 1, 4);
 
         Button setDimensionBt = new Button("Set");
@@ -293,7 +299,7 @@ public class Gui extends Application {
 
         TextField goToTf = new TextField();
         goToTf.setPromptText("Gen");
-        goToTf.setMaxWidth(55);
+        goToTf.setMaxWidth(TF_WIDTH);
         settingsGrid.add(goToTf, 1, 8);
 
         Button goToBt = new Button("X");
@@ -309,7 +315,7 @@ public class Gui extends Application {
 
         TextField speedTf = new TextField(Float.toString(playField.getGameSpeed()));
         speedTf.setPromptText("Speed");
-        speedTf.setMaxWidth(55);
+        speedTf.setMaxWidth(TF_WIDTH);
         settingsGrid.add(speedTf, 0, 10);
 
         Button setSpeedBt = new Button("X");
@@ -334,7 +340,7 @@ public class Gui extends Application {
 
         TextField reanimateRuleTf = new TextField(playField.getReanimateRule());
         reanimateRuleTf.setPromptText("x,x");
-        reanimateRuleTf.setMaxWidth(55);
+        reanimateRuleTf.setMaxWidth(TF_WIDTH);
         settingsGrid.add(reanimateRuleTf, 2, 12);
 
         Label keepLifeRuleLabel = new Label("Keep Alive Rule");
@@ -343,7 +349,7 @@ public class Gui extends Application {
 
         TextField keepLifeRuleTf = new TextField(playField.getKeepLifeRule());
         keepLifeRuleTf.setPromptText("x,x");
-        keepLifeRuleTf.setMaxWidth(55);
+        keepLifeRuleTf.setMaxWidth(TF_WIDTH);
         settingsGrid.add(keepLifeRuleTf, 2, 13);
 
 
@@ -413,7 +419,7 @@ public class Gui extends Application {
 
         // Set the position of the horizontal Divider of the SplitPane
         splitPane.setPrefSize(GUI_WIDTH * 0.6, GUI_WIDTH * 0.4);
-        splitPane.getDividers().get(0).setPosition(0.60);
+        splitPane.getDividers().get(0).setPosition(0.6);
 
 
         Scene scene = new Scene(splitPane);

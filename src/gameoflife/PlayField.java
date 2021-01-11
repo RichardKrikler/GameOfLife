@@ -279,8 +279,8 @@ public class PlayField {
         setSize(getDimensionX(), getDimensionY());
 
         int playFieldArea = getDimensionX() * getDimensionY();
-        double min = playFieldArea * .3;
-        double max = playFieldArea * .5;
+        final double min = playFieldArea * .3;
+        final double max = playFieldArea * .5;
         // Random amount of cells being placed (range between 30% to 50% of the play field)
         int cellAmount = (int) ((Math.random() * (max - min)) + min);
 

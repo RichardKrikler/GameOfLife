@@ -36,6 +36,17 @@ import java.util.Map;
 public class AnalysisGui {
 
     /**
+     * Width of the Analysis GUI
+     */
+    private static final int GUI_WIDTH = 500;
+
+    /**
+     * Height of the Analysis GUI
+     */
+    private static final int GUI_HEIGHT = 650;
+
+
+    /**
      * analysisStage: top level JavaFX container for the analysis GUI
      */
     private static Stage analysisStage = null;
@@ -69,6 +80,22 @@ public class AnalysisGui {
      * BarChart for percent cell changes per generation
      */
     private static BarChart<String, Number> changePercentPerGenBC;
+
+    /**
+     * Chart height
+     */
+    private static final int CHART_HEIGHT = 230;
+
+
+    /**
+     * Gap between elements inside of a Grid
+     */
+    private static final int GRID_GAP = 10;
+
+    /**
+     * Padding around the Grid element
+     */
+    private static final int GRID_PADDING = 10;
 
 
     /**
@@ -116,7 +143,11 @@ public class AnalysisGui {
 
         // ------------------ Analysis window header ------------------
         Label analysisLabel = new Label("Game Of Life - Analysis");
-        analysisLabel.setFont(Font.font("verdana", FontWeight.BOLD, FontPosture.REGULAR, 20));
+        analysisLabel.setFont(Font.font(
+                "verdana",
+                FontWeight.BOLD,
+                FontPosture.REGULAR,
+                20));
 
         StackPane analysisHeaderStackPane = new StackPane();
         analysisHeaderStackPane.getChildren().add(analysisLabel);
@@ -131,7 +162,7 @@ public class AnalysisGui {
 
         cellsPerGenBC = new BarChart<>(cellsPerGenX, cellsPerGenY);
         cellsPerGenBC.setAnimated(false);
-        cellsPerGenBC.setPrefHeight(230);
+        cellsPerGenBC.setPrefHeight(CHART_HEIGHT);
         cellsPerGenBC.setTitle("Living Cells per Generation");
 
         CELLS_PER_GEN_SERIES.setName("Living Cells");
@@ -149,7 +180,7 @@ public class AnalysisGui {
 
         changePercentPerGenBC = new BarChart<>(changePercentPerGenX, changePercentPerGenY);
         changePercentPerGenBC.setAnimated(false);
-        changePercentPerGenBC.setPrefHeight(230);
+        changePercentPerGenBC.setPrefHeight(CHART_HEIGHT);
         changePercentPerGenBC.setTitle("Living Cell Percent Change per Generation");
 
         // Set the bar chart to a complete invisible state
@@ -162,9 +193,9 @@ public class AnalysisGui {
         // ------------------ Analysis Data Grid ------------------
         GridPane analysisGrid = new GridPane();
         analysisGrid.setAlignment(Pos.CENTER);
-        analysisGrid.setHgap(10);
-        analysisGrid.setVgap(10);
-        analysisGrid.setPadding(new Insets(10));
+        analysisGrid.setHgap(GRID_GAP);
+        analysisGrid.setVgap(GRID_GAP);
+        analysisGrid.setPadding(new Insets(GRID_PADDING));
 
         ColumnConstraints col1 = new ColumnConstraints();
         col1.setPercentWidth(70);
@@ -230,9 +261,9 @@ public class AnalysisGui {
         // ------------------ Analysis Chart Select Grid ------------------
         GridPane chartSelectGrid = new GridPane();
         chartSelectGrid.setAlignment(Pos.CENTER);
-        chartSelectGrid.setHgap(10);
-        chartSelectGrid.setVgap(10);
-        chartSelectGrid.setPadding(new Insets(10));
+        chartSelectGrid.setHgap(GRID_GAP);
+        chartSelectGrid.setVgap(GRID_GAP);
+        chartSelectGrid.setPadding(new Insets(GRID_PADDING));
 
         chartSelectGrid.getColumnConstraints().addAll(col1, col2);
 
@@ -287,8 +318,8 @@ public class AnalysisGui {
         Scene scene = new Scene(scrollPane);
         analysisStage.setScene(scene);
         analysisStage.setTitle("Game Of Life - Analysis");
-        analysisStage.setWidth(500);
-        analysisStage.setHeight(650);
+        analysisStage.setWidth(GUI_WIDTH);
+        analysisStage.setHeight(GUI_HEIGHT);
         analysisStage.getIcons().add(new Image("/GameOfLife.png"));
         analysisStage.show();
 

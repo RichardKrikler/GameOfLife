@@ -39,6 +39,12 @@ public class GuiLogic {
 
 
     /**
+     * One Thousand MilliSeconds
+     */
+    private static final int THOUSAND_MS = 1000;
+
+
+    /**
      * Draw the current Play Field to the Canvas of the Gui
      */
     static void drawPlayField() {
@@ -199,7 +205,7 @@ public class GuiLogic {
         Gui.executor.scheduleAtFixedRate(
                 runGame,
                 0,
-                (long) (Gui.playField.getGameSpeed() * 1000),
+                (long) (Gui.playField.getGameSpeed() * THOUSAND_MS),
                 TimeUnit.MILLISECONDS);
     }
 
